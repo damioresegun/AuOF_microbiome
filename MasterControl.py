@@ -312,8 +312,8 @@ def bmtagAln(samfol,ref,inp1,inp2,outpt,isolate):
 ##############################################################################
 '''kraken and bracken classification.'''
 def krabracken(isolate,outpt, read1, read2):
-    krakOut = os.path.join(outpt,isolate,"Kraken")
-    print(krakOut)
+    #krakOut = os.path.join(outpt,isolate,"Kraken")
+    print(outpt)
 ##############################################################################
 if __name__ == '__main__':
     # check if inputs are gzipped
@@ -378,8 +378,8 @@ if __name__ == '__main__':
         my_message = "Starting taxonomic classification with Kraken"
         comms("announce", my_message)
         cleanedReads = os.path.join(i, "CleanReads")
-        krakenOut = os.path.join(i,)
+        krakenOut = os.path.join(i, "Kraken_Bracken")
         karead1 = os.path.join(cleanedReads, sample+"_R1_clean_reads.fastq")
         karead2 = os.path.join(cleanedReads, sample+"_R2_clean_reads.fastq")
-        krabracken()
+        krabracken(sample, krakenOut, karead1, karead2)
     
