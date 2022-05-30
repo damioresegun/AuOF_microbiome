@@ -13,7 +13,7 @@
 #
 # Script to carry out workflow control of microbiome analysis for the Antibiotics Under our Feet project
 # 
-# RequiresL fastqc, trim-galore, bmtagger
+# RequiresL fastqc, trim-galore, bmtagger, kraken2, bracken,
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
 from imaplib import Int2AP
@@ -66,6 +66,14 @@ def get_args():
                                 "if it is not in your $PATH. If in your $PATH "+
                                 "simply write kraken2",
                                 required=True)
+    required_args.add_argument("-br", "--bracken",
+                                dest="Bracken_PATH",
+                                action="store",
+                                type=str,
+                                help="Full path to your bracken installation " +
+                                "if it is not in your $PATH. If in your $PATH "+
+                                "simply write bracken",
+                                required=True)
     required_args.add_argument("-kb", "--kraken_DB",
                                 dest="Kraken_DBPATH",
                                 action="store",
@@ -96,6 +104,23 @@ def get_args():
                                 help="A minimum number of groups that must" +
                                 "be matched to place a contig into a " +
                                 "taxonomic group")
+    optional_args.add_argument("-bt", "--bracken_hit_threshold",
+                                dest='Bracken_Hit_Threshold',
+                                action="store",
+                                type=int,
+                                default=20,
+                                help="A minimum number of kmers that must" +
+                                "be matched to place a contig into a " +
+                                "taxonomic group by bracken reestimation" +
+                                "Default is [20]")
+    optional_args.add_argument("-bl", "--bracken_kmer_length",
+                                dest='Bracken_Kmer_Length',
+                                action="store",
+                                type=int,
+                                default=100,
+                                help="The kmer length used to build your " +
+                                "bracken index database (from the krakenDB " +
+                                "Default is [100]")
     
     """
     Options to add:    
@@ -114,6 +139,9 @@ REFRENCE = args.HumanReference
 KRAK = args.Kraken_PATH
 KRAKDB = args.Kraken_DBPATH
 KRAK_THRESH = args.Kraken_Hit_Threshold
+BRAK = args.Bracken_PATH
+BRAKTHRESH = args.Bracken_Hit_Threshold
+BRAKLENGTH = args.Bracken_Kmer_Length
 ##############################################################################
 # check if the input exists
 if os.path.exists(INPDIR):
@@ -196,7 +224,7 @@ def fastqc(phase,inpt,outpt,threads):
         comms("tell", tellU)
         print(runFatq)
         # run the fastqc command
-        #subprocess.call(runFatq, shell=True)
+        subprocess.call(runFatq, shell=True)
 ##############################################################################
 '''function to run trim-galore for trimming forward and reverse reads'''
 def trimmy(inpt,outpt,threads):
@@ -215,7 +243,7 @@ def trimmy(inpt,outpt,threads):
         tellU = "Command for trim-galore is: " + runTrm
         comms("tell", tellU)
         # run the command
-        #subprocess.call(runTrm, shell=True)
+        subprocess.call(runTrm, shell=True)
         my_message = "Renaming the trimmed reads"
         comms("tell", my_message)
         # get the filenames
@@ -224,11 +252,11 @@ def trimmy(inpt,outpt,threads):
             if (str(i).__contains__("R1")):
                 outFil = os.path.join(trmOut, fname+"_R1_trimmed.fastq")
                 print(outFil)
-                #shutil.copy2(str(os.path.abspath(i)), os.path.abspath(outFil))
+                shutil.copy2(str(os.path.abspath(i)), os.path.abspath(outFil))
                 #os.remove(str(os.path.abspath(i)))
             if (str(i).__contains__("R2")):
                 outFil = os.path.join(trmOut, fname+"_R2_trimmed.fastq")
-                #shutil.copy2(str(os.path.abspath(i)), os.path.abspath(outFil))
+                shutil.copy2(str(os.path.abspath(i)), os.path.abspath(outFil))
                 #os.remove(str(os.path.abspath(i)))
 ##############################################################################
 '''function to remove human DNA contamination. Requires the reference to be
@@ -313,7 +341,38 @@ def bmtagAln(samfol,ref,inp1,inp2,outpt,isolate):
 '''kraken and bracken classification.'''
 def krabracken(isolate,outpt, read1, read2):
     #krakOut = os.path.join(outpt,isolate,"Kraken")
-    print(outpt)
+    samOut = os.path.join(outpt, isolate)
+    Krak = (KRAK, "--db", KRAKDB, "--paired", read1, read2, "--threads", str(THREADS),
+            "--output", samOut+"_All_classifications.tsv",
+            "--report", samOut+"_fullreport.txt", "--use-names",
+            "--unclassified-out", samOut+"_unclassified.fastq",
+            "--classified-out", samOut+"_classified.fastq", 
+            "--minimum-hit-groups", str(KRAK_THRESH), "--report-minimizer-data")
+    runKrak = ' '.join(Krak)
+    tellU = "Running Kraken using the command: " + runKrak
+    comms("tell",tellU)
+    #
+    subprocess.call(runKrak, shell=True)
+    #
+    coCol = ("cut -f1-3,6-8", samOut+"_fullreport.txt", ">", samOut+"_classicReport.txt")
+    runCoCol = ' '.join(coCol)
+    subprocess.call(runCoCol, shell=True)
+    #
+    tellU = "Kraken completed and saved in: " + samOut
+    comms("tell",tellU)
+    print(runCoCol)
+    #
+    tellU = "Starting bracken"
+    comms("tell",tellU)
+    Brak = (BRAK, "-d", KRAKDB, "-i", samOut+"_fullreport.txt", "-o", 
+            samOut+"bracken_fullreport.txt", "-t", str(BRAKTHRESH), "-w",
+            samOut+"bracken_classicreport.txt", "-r", str(BRAKLENGTH))
+    runBrak = ' '.join(Brak)
+    tellU = "Bracken running with the command: " + runBrak
+    comms("tell",tellU)
+    #
+    subprocess.call(runBrak,shell=True)
+    #
 ##############################################################################
 if __name__ == '__main__':
     # check if inputs are gzipped
@@ -338,7 +397,7 @@ if __name__ == '__main__':
     my_message = "Starting PreQC analysis of raw reads using FastQC"
     comms("announce",my_message)
     #
-    #fastqc("pre",INPDIR,OUTDIR,THREADS)
+    fastqc("pre",INPDIR,OUTDIR,THREADS)
     #
     my_message = "PreQC FastQC complete"
     comms("announce",my_message)
@@ -363,7 +422,7 @@ if __name__ == '__main__':
         read1 = os.path.join(i, "TrimmedReads", sample+"_R1_trimmed.fastq")
         read2 = os.path.join(i, "TrimmedReads", sample+"_R2_trimmed.fastq")
         #
-        #bmtagAln(i,REFRENCE,read1,read2,outfol,sample)
+        bmtagAln(i,REFRENCE,read1,read2,outfol,sample)
         #
         my_message = "Human reads removed and clean reads are in: " + os.path.abspath(outfol)
         comms("tell", my_message)
@@ -371,7 +430,7 @@ if __name__ == '__main__':
         comms("announce", my_message)
         # not working yet for some reason!!!!!
         postQC = os.path.join(i, "PostQC_FastQC")
-        fastqc("post",outfol,postQC,THREADS)
+        #fastqc("post",outfol,postQC,THREADS)
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         tellU = "FastQC PostQC analysis complete. Report are in: " + os.path.abspath(postQC)
         comms("tell", tellU)
