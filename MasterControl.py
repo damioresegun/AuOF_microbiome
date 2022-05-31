@@ -479,7 +479,7 @@ if __name__ == '__main__':
         comms("announce", my_message)
         # not working yet for some reason!!!!!
         postQC = os.path.join(i, "PostQC_FastQC")
-        #fastqc("post",outfol,postQC,THREADS)
+        fastqc("post",outfol,postQC,THREADS)
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         tellU = "FastQC PostQC analysis complete. Report are in: " + os.path.abspath(postQC)
         comms("tell", tellU)
