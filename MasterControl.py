@@ -16,6 +16,8 @@
 # RequiresL fastqc, trim-galore, bmtagger, kraken2, bracken,
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
+from curses import flash
+import enum
 from imaplib import Int2AP
 import os
 import shutil
@@ -100,7 +102,7 @@ def get_args():
                                 dest='Kraken_Hit_Threshold',
                                 action="store",
                                 type=int,
-                                default=5,
+                                default=2,
                                 help="A minimum number of groups that must" +
                                 "be matched to place a contig into a " +
                                 "taxonomic group")
@@ -300,7 +302,7 @@ def bmtagAln(samfol,ref,inp1,inp2,outpt,isolate):
     tellU = "Looking for human reads now"
     comms("tell", tellU)
     print(runBmTag)
-    #subprocess.call(runBmTag, shell=True)
+    subprocess.call(runBmTag, shell=True)
     tellU = "BMTAG complete. Cleaning reads now"
     comms("tell", tellU)
     # get the human reads, skip them and write the non-human reads to file
@@ -309,33 +311,78 @@ def bmtagAln(samfol,ref,inp1,inp2,outpt,isolate):
         pass
     else:
         os.makedirs(cleanOut)
-    humanRead = {}
+    humanRead={}
+    for line in open(outFile):
+            humanRead[line.strip()]=None
+    cleanRead1 = os.path.join(cleanOut, isolate+"_R1_clean_reads.fastq")
+    # Print out the fastq file line by line unless the read is human:
+    skip=False
+    clean1out = open(cleanRead1, "w", newline='')
+    for i, line in enumerate(open(inp1)):
+        if i%4==0:
+            if line[1:].split("/")[0].split()[0] in humanRead:
+                skip=True
+            else:
+                skip=False
+        if skip==False:
+            #print(line.rstrip())
+            clean1out.write(line.rstrip()+"\n")
+    cleanRead2 = os.path.join(cleanOut, isolate+"_R2_clean_reads.fastq")
+    skip=False
+    clean2out = open(cleanRead2, "w", newline='')
+    for i, line in enumerate(open(inp2)):
+        if i%4==0:
+            if line[1:].split("/")[0].split()[0] in humanRead:
+                skip=True
+            else:
+                skip=False
+        if skip==False:
+            #print(line.rstrip())
+            clean2out.write(line.rstrip()+"\n")
+    """ humanRead = {}
     for line in open(outFile):
         humanRead[line.strip()]=None
     cleanRead1 = os.path.join(cleanOut, isolate+"_R1_clean_reads.fastq")
-    clean1out = open(cleanRead1, "w")
     skip=False
+    clean1out = open(cleanRead1, "w", newline='')
     for i, line in enumerate(open(inp1)):
         if i%4==0:
-            if line[1:].split()[0] in humanRead:
+            if line[1:].split("/")[0].split()[0] in humanRead:
                 skip=True
             else:
                 skip=False
+        else:
+            continue
         if skip==False:
-            clean1out.write(line.rstrip())
+            clean1out.write(line.rstrip()+"\n")
     # do it for read2
     cleanRead2 = os.path.join(cleanOut, isolate+"_R2_clean_reads.fastq")
-    clean2out = open(cleanRead2, "w")
     skip=False
+    clean2out = open(cleanRead2, "w",newline='')
     for i, line in enumerate(open(inp2)):
         if i%4==0:
-            if line[1:].split()[0] in humanRead:
+            if line[1:].split("/")[0].split()[0] in humanRead:
                 skip=True
             else:
                 skip=False
         if skip==False:
-            clean2out.write(line.rstrip())
+            clean2out.write(line.rstrip()+"\n") """
     os.rmdir(tmpOut)
+##############################################################################
+'''function to remove human reads and keep non-human reads'''
+def remove_human(bmtag,reads):
+    humanReads = {}
+    for line in open(bmtag):
+        humanReads[line.strip()]=None
+    skip = False
+    for i , line in enumerate(open(reads)):
+        if i%4==0:
+            if line[1:].split("/")[0].split[0] in humanReads:
+                skip = True
+            else:
+                skip = False
+        if skip == False:
+            print(line.rstrip())
 # check if the reference is indexed
 ##############################################################################
 '''kraken and bracken classification.'''
@@ -345,12 +392,13 @@ def krabracken(isolate,outpt, read1, read2):
     Krak = (KRAK, "--db", KRAKDB, "--paired", read1, read2, "--threads", str(THREADS),
             "--output", samOut+"_All_classifications.tsv",
             "--report", samOut+"_fullreport.txt", "--use-names",
-            "--unclassified-out", samOut+"_unclassified.fastq",
-            "--classified-out", samOut+"_classified.fastq", 
+            "--unclassified-out", samOut+"_unclassified#.fastq",
+            "--classified-out", samOut+"_classified#.fastq", 
             "--minimum-hit-groups", str(KRAK_THRESH), "--report-minimizer-data")
     runKrak = ' '.join(Krak)
     tellU = "Running Kraken using the command: " + runKrak
     comms("tell",tellU)
+    print(runKrak)
     #
     subprocess.call(runKrak, shell=True)
     #
@@ -370,6 +418,7 @@ def krabracken(isolate,outpt, read1, read2):
     runBrak = ' '.join(Brak)
     tellU = "Bracken running with the command: " + runBrak
     comms("tell",tellU)
+    print(runBrak)
     #
     subprocess.call(runBrak,shell=True)
     #
@@ -438,6 +487,10 @@ if __name__ == '__main__':
         comms("announce", my_message)
         cleanedReads = os.path.join(i, "CleanReads")
         krakenOut = os.path.join(i, "Kraken_Bracken")
+        if os.path.exists(krakenOut):
+            pass
+        else:
+            os.makedirs(krakenOut)
         karead1 = os.path.join(cleanedReads, sample+"_R1_clean_reads.fastq")
         karead2 = os.path.join(cleanedReads, sample+"_R2_clean_reads.fastq")
         krabracken(sample, krakenOut, karead1, karead2)
