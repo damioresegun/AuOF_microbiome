@@ -14,6 +14,7 @@
 # Script to carry out workflow control of microbiome analysis for the Antibiotics Under our Feet project
 # 
 # Requires: Via conda(fastqc, trim-galore, bmtagger, kraken2, bracken, krona, krakentools)
+# Considerations: Remove need for kraken and bracken path arguments. Force installation via conda
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
 import enum
@@ -100,10 +101,10 @@ def get_args():
                                 dest='Kraken_Hit_Threshold',
                                 action="store",
                                 type=int,
-                                default=2,
+                                default=5,
                                 help="A minimum number of groups that must" +
                                 "be matched to place a contig into a " +
-                                "taxonomic group")
+                                "taxonomic group. Default is [5]")
     optional_args.add_argument("-bt", "--bracken_hit_threshold",
                                 dest='Bracken_Hit_Threshold',
                                 action="store",
@@ -368,8 +369,8 @@ def krabracken(isolate,outpt, read1, read2):
     comms("tell",tellU)
     #
     Brak = (BRAK, "-d", KRAKDB, "-i", samOut+"_fullreport.txt", "-o", 
-            samOut+"bracken_fullreport.txt", "-t", str(BRAKTHRESH), "-w",
-            samOut+"bracken_classicreport.txt", "-r", str(BRAKLENGTH))
+            samOut+"_bracken_fullreport.txt", "-t", str(BRAKTHRESH), "-w",
+            samOut+"_bracken_classicreport.txt", "-r", str(BRAKLENGTH))
     runBrak = ' '.join(Brak)
     tellU = "Bracken running with the command: " + runBrak
     comms("tell",tellU)
@@ -380,7 +381,19 @@ def krabracken(isolate,outpt, read1, read2):
     tellU = "Bracken complete. Starting generation of Krona plots"
     comms("tell", tellU)
     #
-    
+    # convert outputs of the bracken classic reports
+    krny = ("kreport2krona.py -r", samOut+"_bracken_classicreport.txt", 
+            "-o", samOut+"_bracken_classicreport.krona")
+    Runkrnny = ' '.join(krny)
+    ktny = ("ktImportText", samOut+"_bracken_classicreport.krona", 
+            "-o", samOut+"_bracken_classicreport.html")
+    RunKtny = ' '.join(ktny)
+    tellU = "Commands used for krona generation are: " + Runkrnny + "\n and: "+RunKtny
+    comms("tell", tellU)
+    #
+    subprocess.call(Runkrnny, shell=True)
+    subprocess.call(RunKtny, shell=True)
+    #
 ##############################################################################
 if __name__ == '__main__':
     # check if inputs are gzipped
@@ -453,4 +466,7 @@ if __name__ == '__main__':
         karead1 = os.path.join(cleanedReads, sample+"_R1_clean_reads.fastq")
         karead2 = os.path.join(cleanedReads, sample+"_R2_clean_reads.fastq")
         krabracken(sample, krakenOut, karead1, karead2)
-    
+        tellU = "Kraken, Bracken and Krona plots complete"
+        comms("tell", my_message)
+        my_message = "Beginning functional profiling"
+        comms("announce", my_message)
