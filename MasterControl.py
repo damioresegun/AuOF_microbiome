@@ -13,12 +13,10 @@
 #
 # Script to carry out workflow control of microbiome analysis for the Antibiotics Under our Feet project
 # 
-# RequiresL fastqc, trim-galore, bmtagger, kraken2, bracken,
+# Requires: Via conda(fastqc, trim-galore, bmtagger, kraken2, bracken, krona, krakentools)
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
-from curses import flash
 import enum
-from imaplib import Int2AP
 import os
 import shutil
 import sys
@@ -339,51 +337,7 @@ def bmtagAln(samfol,ref,inp1,inp2,outpt,isolate):
         if skip==False:
             #print(line.rstrip())
             clean2out.write(line.rstrip()+"\n")
-    """ humanRead = {}
-    for line in open(outFile):
-        humanRead[line.strip()]=None
-    cleanRead1 = os.path.join(cleanOut, isolate+"_R1_clean_reads.fastq")
-    skip=False
-    clean1out = open(cleanRead1, "w", newline='')
-    for i, line in enumerate(open(inp1)):
-        if i%4==0:
-            if line[1:].split("/")[0].split()[0] in humanRead:
-                skip=True
-            else:
-                skip=False
-        else:
-            continue
-        if skip==False:
-            clean1out.write(line.rstrip()+"\n")
-    # do it for read2
-    cleanRead2 = os.path.join(cleanOut, isolate+"_R2_clean_reads.fastq")
-    skip=False
-    clean2out = open(cleanRead2, "w",newline='')
-    for i, line in enumerate(open(inp2)):
-        if i%4==0:
-            if line[1:].split("/")[0].split()[0] in humanRead:
-                skip=True
-            else:
-                skip=False
-        if skip==False:
-            clean2out.write(line.rstrip()+"\n") """
     os.rmdir(tmpOut)
-##############################################################################
-'''function to remove human reads and keep non-human reads'''
-def remove_human(bmtag,reads):
-    humanReads = {}
-    for line in open(bmtag):
-        humanReads[line.strip()]=None
-    skip = False
-    for i , line in enumerate(open(reads)):
-        if i%4==0:
-            if line[1:].split("/")[0].split[0] in humanReads:
-                skip = True
-            else:
-                skip = False
-        if skip == False:
-            print(line.rstrip())
-# check if the reference is indexed
 ##############################################################################
 '''kraken and bracken classification.'''
 def krabracken(isolate,outpt, read1, read2):
@@ -412,6 +366,7 @@ def krabracken(isolate,outpt, read1, read2):
     #
     tellU = "Starting bracken"
     comms("tell",tellU)
+    #
     Brak = (BRAK, "-d", KRAKDB, "-i", samOut+"_fullreport.txt", "-o", 
             samOut+"bracken_fullreport.txt", "-t", str(BRAKTHRESH), "-w",
             samOut+"bracken_classicreport.txt", "-r", str(BRAKLENGTH))
@@ -422,6 +377,10 @@ def krabracken(isolate,outpt, read1, read2):
     #
     subprocess.call(runBrak,shell=True)
     #
+    tellU = "Bracken complete. Starting generation of Krona plots"
+    comms("tell", tellU)
+    #
+    
 ##############################################################################
 if __name__ == '__main__':
     # check if inputs are gzipped
