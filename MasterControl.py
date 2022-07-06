@@ -470,3 +470,13 @@ if __name__ == '__main__':
         comms("tell", my_message)
         my_message = "Beginning functional profiling"
         comms("announce", my_message)
+    """Next steps:
+    - Make a visualisation functions
+    - Move the krona visualisation steps from the kraken function to visualisation function
+    - Copy bracken classic outputs into a new folder called Kraken_Visualisations
+    - Rename the bracken outputs to just isolate names
+    - Make the krona plots using bracken outputs
+    - Make a biom file using the bracken outputs
+    - Use the R script to visualise
+    - Then functional profiling
+    """
