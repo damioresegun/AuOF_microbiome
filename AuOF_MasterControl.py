@@ -8,6 +8,9 @@
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
 import enum
+import logging
+import logging.handlers
+import time
 import os
 import shutil
 import sys
@@ -95,3 +98,52 @@ def get_args():
     args = parser.parse_args()
     return args
 ####################################################################################################
+# set global variables
+args = get_args()
+INPDIR = os.path.abspath(args.Input_DIR)
+OUTDIR = os.path.abspath(args.Output_DIR)
+THREADS = args.Threads
+MXMEMORY = args.Memory
+REFRENCE = args.HumanReference
+KRAK = args.Kraken_PATH
+KRAKDB = args.Kraken_DBPATH
+KRAK_THRESH = args.Kraken_Hit_Threshold
+BRAK = args.Bracken_PATH
+BRAKTHRESH = args.Bracken_Hit_Threshold
+BRAKLENGTH = args.Bracken_Kmer_Length
+####################################################################################################################################################
+''' Run the script and functions '''
+####################################################################################################################################################
+# Setting up logging
+if __name__ == '__main__':
+    try:
+        logger = logging.getLogger("AuOF_MasterControl.py: %s" % time.asctime())
+        logger.setLevel(logging.DEBUG)
+        # general information and debugging handler
+        d_handler = [logging.StreamHandler(sys.stdout),
+                    logging.FileHandler("info.log")]
+        #d_handler = logging.StreamHandler(sys.stdout)
+        d_handler.setLevel(logging.DEBUG)
+        d_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        d_handler.setFormatter(d_formatter)
+        logger.addHandler(d_handler)
+        # error handler specifically
+        e_handler = [logging.StreamHandler(sys.stderr),
+                    logging.FileHandler("error.log")]
+        e_handler.setLevel(logging.ERROR)
+        e_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        e_handler.setFormatter(e_formatter)
+        logger.addHandler(e_handler)
+    except BaseException:
+        outstr = "Debug log file could not be open for logging"
+        logger.error(outstr)
+        sys.exit(1)
+    # Print the arguments to file
+    logger.info("Command line: %s", ' '.join(sys.argv))
+    logger.info("Starting: %s", time.asctime())
+####################################################################################################################################################
+    # check logger
+    logging.info("Checkmate")
+    logging.error("Movie")
+
