@@ -18,7 +18,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from Tools import makeDirectory, prechecks
+from Tools import makeDirectory, prechecks, zipFile
 ####################################################################################################
 # set the needed arguments
 def get_args():
@@ -152,17 +152,31 @@ if __name__ == '__main__':
     logger.info("Command line: %s", ' '.join(sys.argv))
     logger.info("Starting: %s", time.asctime())
 ####################################################################################################################################################
-    # check inputs
-    checkInp, checkOut = prechecks(INPDIR, OUTDIR)
-    if checkInp == "Good":
-        logger.info("Input files exists. Files will be checked downstream")
-    elif checkInp == "Bad":
-        logger.info("Script failed. Check error logs for more information")
-        logger.error("Script failed to recognise your input directory. Does it exist? " +
-                        "Please check and try again.")
-    if checkOut == "Make":
-        logger.info("Output directory does not exist. Making this")
-        makeDirectory(OUTDIR)
-    elif checkOut == "Good":
-        logger.info("Output directory already exists. Will be using this.")
+''' check inputs  '''
+####################################################################################################################################################
+# run the checking function
+checkInp, checkOut = prechecks(INPDIR, OUTDIR)
+if checkInp == "Good":
+    logger.info("Input files exists. Files will be checked downstream")
+elif checkInp == "Bad":
+    logger.info("Script failed. Check error logs for more information")
+    logger.error("Script failed to recognise your input directory. Does it exist? " +
+                    "Please check and try again.")
+if checkOut == "Make":
+    logger.info("Output directory does not exist. Making this")
+    makeDirectory(OUTDIR)
+elif checkOut == "Good":
+    logger.info("Output directory already exists. Will be using this.")
+####################################################################################################################################################
+''' call functions and run pipeline'''
+####################################################################################################################################################
+# check if input files exist and if they are zipped
+for folder in Path(INPDIR.glob('*')):
+    for file in os.listdir(str(folder)):
+        zfile = os.path.join(folder, file)
+        if (zfile.__contains__(".gz")):
+            logger.info("Input files are zipped. Unnzipping them now")
+            zipFile("compress", zfile, THREADS)
+# Carry out fastqc 
 
+        
