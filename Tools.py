@@ -87,4 +87,3 @@ def fastqc(phase, inpt, outpt, threads):
         fatq1 = ' '.join("fastqc -t", str(threads), "-o", outpt, "-f fastq", fasfi1, fasfi2)
         print(fatq1)
         subprocess.call(fatq1, shell=True)
-        

@@ -18,7 +18,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from Tools import makeDirectory, prechecks, zipFile
+from Tools import fastqc, makeDirectory, prechecks, zipFile
 ####################################################################################################
 # set the needed arguments
 def get_args():
@@ -178,5 +178,6 @@ for folder in Path(INPDIR.glob('*')):
             logger.info("Input files are zipped. Unnzipping them now")
             zipFile("compress", zfile, THREADS)
 # Carry out fastqc 
-
+logger.info("Checking raw quality of reads")
+fastqc("pre", INPDIR, OUTDIR)
         
