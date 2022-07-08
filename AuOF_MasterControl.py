@@ -17,6 +17,8 @@ import sys
 import argparse
 import subprocess
 from pathlib import Path
+
+from Tools import makeDirectory, prechecks
 ####################################################################################################
 # set the needed arguments
 def get_args():
@@ -143,7 +145,17 @@ if __name__ == '__main__':
     logger.info("Command line: %s", ' '.join(sys.argv))
     logger.info("Starting: %s", time.asctime())
 ####################################################################################################################################################
-    # check logger
-    logging.info("Checkmate")
-    logging.error("Movie")
+    # check inputs
+    checkInp, checkOut = prechecks(INPDIR, OUTDIR)
+    if checkInp == "Good":
+        logger.info("Input files exists. Files will be checked downstream")
+    elif checkInp == "Bad":
+        logger.info("Script failed. Check error logs for more information")
+        logger.error("Script failed to recognise your input directory. Does it exist? " +
+                        "Please check and try again.")
+    if checkOut == "Make":
+        logger.info("Output directory does not exist. Making this")
+        makeDirectory(OUTDIR)
+    elif checkOut == "Good":
+        logger.info("Output directory already exists. Will be using this.")
 

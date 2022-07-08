@@ -26,4 +26,9 @@ def prechecks(input, output):
         pass
     else:
         inp = "Failed"
+    if os.path.exists(output):
+        out = "Good"
+    else:
+        out = "Make"
+    return inp, out
         
