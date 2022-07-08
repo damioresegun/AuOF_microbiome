@@ -106,7 +106,7 @@ THREADS = args.Threads
 MXMEMORY = args.Memory
 REFRENCE = args.HumanReference
 KRAK = args.Kraken_PATH
-KRAKDB = args.Kraken_DBPATH
+KRAKDB = args.Kraken_DB
 KRAK_THRESH = args.Kraken_Hit_Threshold
 BRAK = args.Bracken_PATH
 BRAKTHRESH = args.Bracken_Hit_Threshold
@@ -120,21 +120,28 @@ if __name__ == '__main__':
         logger = logging.getLogger("AuOF_MasterControl.py: %s" % time.asctime())
         logger.setLevel(logging.DEBUG)
         # general information and debugging handler
-        d_handler = [logging.StreamHandler(sys.stdout),
-                    logging.FileHandler("info.log")]
-        #d_handler = logging.StreamHandler(sys.stdout)
+        dfile = open(OUTDIR + '/infolog.log', 'w')
+        d_handler = logging.StreamHandler(sys.stdout)
+        dd_handler = logging.StreamHandler(dfile)
         d_handler.setLevel(logging.DEBUG)
+        dd_handler.setLevel(logging.DEBUG)
         d_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
         d_handler.setFormatter(d_formatter)
+        dd_handler.setFormatter(d_formatter)
         logger.addHandler(d_handler)
+        logger.addHandler(dd_handler)
         # error handler specifically
-        e_handler = [logging.StreamHandler(sys.stderr),
-                    logging.FileHandler("error.log")]
+        efile = open(OUTDIR + '/errorlog.log', 'w')
+        e_handler = logging.StreamHandler()
+        ee_handler = logging.StreamHandler(efile)
         e_handler.setLevel(logging.ERROR)
+        ee_handler.setLevel(logging.ERROR)
         e_formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         e_handler.setFormatter(e_formatter)
+        ee_handler.setFormatter(e_formatter)
         logger.addHandler(e_handler)
+        logger.addHandler(ee_handler)
     except BaseException:
         outstr = "Debug log file could not be open for logging"
         logger.error(outstr)
@@ -144,6 +151,6 @@ if __name__ == '__main__':
     logger.info("Starting: %s", time.asctime())
 ####################################################################################################################################################
     # check logger
-    logging.info("Checkmate")
-    logging.error("Movie")
+    logger.info("Checkmate")
+    logger.error("Movie")
 
