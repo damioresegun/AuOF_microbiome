@@ -18,7 +18,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from Tools import fastqc, makeDirectory, prechecks, zipFile
+from Tools import bmtagAligner, fastqc, makeDirectory, prechecks, trimmy, zipFile
 ####################################################################################################
 # set the needed arguments
 def get_args():
@@ -180,4 +180,12 @@ for folder in Path(INPDIR.glob('*')):
 # Carry out fastqc 
 logger.info("Checking raw quality of reads")
 fastqc("pre", INPDIR, OUTDIR)
-        
+logger.info("Pre quality control FastQC completed")
+# trim the reads
+logger.info("Starting trimming")
+trimmedReads = trimmy(INPDIR, OUTDIR, THREADS)
+logger.info("Trimming complete and saved in: " + trimmedReads)
+logger.info("Removing Human DNA contamination")
+# remove human reads
+bmtagAligner()
+

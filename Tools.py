@@ -7,6 +7,10 @@ from asyncio import subprocess
 from concurrent.futures import thread
 import os
 from pathlib import Path
+import shutil
+from tabnanny import check
+
+from AuOF_MasterControl import OUTDIR
 
 
 def makeDirectory(directory):
@@ -66,6 +70,10 @@ def zipFile(func, file, threads):
 
 
 def fastqc(phase, inpt, outpt, threads):
+    ''' function to run fastqc for pre and post trimming
+    usage: fastqc(input read folder, output/preQCm, 36)
+    can also be output/postQC
+    '''
     if phase == "pre":
         folName = "PreQC_FastQC"
         for file in Path(inpt).glob('*'):
@@ -87,3 +95,52 @@ def fastqc(phase, inpt, outpt, threads):
         fatq1 = ' '.join("fastqc -t", str(threads), "-o", outpt, "-f fastq", fasfi1, fasfi2)
         print(fatq1)
         subprocess.call(fatq1, shell=True)
+
+def trimmy(inpt, outpt, threads):
+    '''Function to run trim-galore for trimming forward and reverse reads'''
+    for folder in Path(inpt).glob('*'):
+        fname = os.path.basename(folder).split("_")[0]
+        trmOut = os.path.join(outpt, fname, "TrimmedReads")
+        makeDirectory(trmOut)
+        # get the reads
+        fasfi1 = os.path.join(i, "*_R1*")
+        fasfi2 = os.path.join(i, "*_R2*")
+        # make the command
+        runTrm = ' '.join("trim-galore --no_report_file --paired --cores", str(threads),
+                        "-o", trmOut, fasfi1, fasfi2)
+        print("Command for trim-galore is: " + runTrm)
+        subprocess.call(runTrm, shell = True)
+        print("Trim-galore complete")
+        # now rename the files
+        for file in Path(trmOut).glob('*'):
+            print(str(file))
+            if (str(file).__contains__("R1")):
+                outFile = os.path.join(trmOut, fname + "_R1_trimmed.fastq")
+                shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+            if (str(file).__contains__("R2")):
+                outFile = os.path.join(trmOut, fname + "_R2_trimmed.fastq")
+                shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+
+
+def bmtagAligner(inpDir, reference, memory):
+    for folder in Path(os.path.abspath(inpDir)).glob('*'):
+        outfol = os.path.join(folder, "BMTAG")
+        makeDirectory(inpDir)
+        sample = os.path.basename(folder)
+        read1 = os.path.join(folder, "TrimmedReads", sample+"_R1_trimmed.fastq")
+        read2 = os.path.join(folder, "TrimmedReads", sample+"_R2_trimmed.fastq")
+        checkRef = reference.split(".fa")[0]
+        # check if the reference was indexed
+        if os.path.exists(os.path.abspath(checkRef) + ".bitmask"):
+            refPres = "Reference has been indexed already"
+        else: 
+            refPres = "Reference has not been indexed. Indexing will begin now"
+            runBmInd = ' '.join("bmtool -d", ref, "-o", os.path.abspath(checkRef) + ".bitmask")
+            runBmPsm = ' '.join("sprism mkindex -i", ref, "-o", os.path.abspath(checkRef) + ".srprism", 
+                                "-M", memory)
+            print(runBmInd)
+            subprocess.call(runBmInd, shell = True)
+            print(runBmPsm)
+            subprocess.call(runBmPsm)
+    # make temporary output folder
+    
