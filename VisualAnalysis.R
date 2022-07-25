@@ -9,7 +9,7 @@ rm(list = ls())
 # install and set libraries
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-#BiocManager::install(c("phyloseq","ggplot2", "cowplot", "dplyr", "ggplotify))
+BiocManager::install(c("phyloseq", "ggplot2", "cowplot", "dplyr", "ggplotify"))
 library("phyloseq")
 library("ggplot2")
 library("cowplot")
@@ -18,7 +18,7 @@ library("ggplotify")
 # get arguments
 args = commandArgs(trailingOnly=TRUE)
 if(length(args)==0) {
-  #stop("At least one argument is needed to begin")
+  stop("At least one argument is needed to begin")
 }
 args = c(getwd(), "Combined_BrackenReports.biom", "Species", "knowlesi")
 workD = args[1] # the working directory
