@@ -179,7 +179,7 @@ for folder in Path(INPDIR.glob('*')):
             zipFile("compress", zfile, THREADS)
 # Carry out fastqc 
 logger.info("Checking raw quality of reads")
-fastqc("pre", INPDIR, OUTDIR)
+fastqc("pre", INPDIR, OUTDIR, THREADS)
 logger.info("Pre quality control FastQC completed")
 # trim the reads
 logger.info("Starting trimming")
@@ -187,5 +187,13 @@ trimmedReads = trimmy(INPDIR, OUTDIR, THREADS)
 logger.info("Trimming complete and saved in: " + trimmedReads)
 logger.info("Removing Human DNA contamination")
 # remove human reads
-bmtagAligner()
-
+try:
+    refInd, cleanOut, bmTag = bmtagAligner(OUTDIR, REFRENCE, MXMEMORY)
+    logger.info(refInd)
+    logger.info("BMTAGGER outputs are in: " + bmTag)
+    logger.info("The trimmed and cleaned reads are saved in: " + cleanOut)
+except (FileNotFoundError, FileExistsError):
+    logger.info("A file was not found. Check the log file")
+    logger.error("File not found. Check the reads file to ensure they are present")
+logger.info("Starting PostQC analysis of raw reads using FastQC")
+fastqc("post", cleanOut, OUTDIR, THREADS)

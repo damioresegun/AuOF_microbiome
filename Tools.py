@@ -5,6 +5,7 @@ Author: Damilola Oresegun
 
 from asyncio import subprocess
 from concurrent.futures import thread
+from distutils.archive_util import make_archive
 import os
 from pathlib import Path
 import shutil
@@ -88,13 +89,15 @@ def fastqc(phase, inpt, outpt, threads):
             print(fatq1)
             subprocess.call(fatq1, shell=True)
     elif phase == "post":
-        fname = os.path.dirname(inpt).split("/")[-1]
-        fasfi1 = os.path.join(inpt, fname+"_R1_clean_reads.fastq")
-        fasfi2 = os.path.join(inpt, fname+"_R2_clean_reads.fastq")
-        # build the command
-        fatq1 = ' '.join("fastqc -t", str(threads), "-o", outpt, "-f fastq", fasfi1, fasfi2)
-        print(fatq1)
-        subprocess.call(fatq1, shell=True)
+        folName = "PostQC_FastQC"
+        for file in Path(inpt).glob('*'):
+            fname = os.path.dirname(inpt).split("/")[-1]
+            fasfi1 = os.path.join(inpt, fname+"_R1_clean_reads.fastq")
+            fasfi2 = os.path.join(inpt, fname+"_R2_clean_reads.fastq")
+            # build the command
+            fatq1 = ' '.join("fastqc -t", str(threads), "-o", outpt, "-f fastq", fasfi1, fasfi2)
+            print(fatq1)
+            subprocess.call(fatq1, shell=True)
 
 def trimmy(inpt, outpt, threads):
     '''Function to run trim-galore for trimming forward and reverse reads'''
@@ -123,24 +126,74 @@ def trimmy(inpt, outpt, threads):
 
 
 def bmtagAligner(inpDir, reference, memory):
+    '''Function to remove human reads. Takes in trimmed reads from TrimmedReads folder'''
     for folder in Path(os.path.abspath(inpDir)).glob('*'):
         outfol = os.path.join(folder, "BMTAG")
-        makeDirectory(inpDir)
+        makeDirectory(outfol)
         sample = os.path.basename(folder)
-        read1 = os.path.join(folder, "TrimmedReads", sample+"_R1_trimmed.fastq")
-        read2 = os.path.join(folder, "TrimmedReads", sample+"_R2_trimmed.fastq")
+        read1 = os.path.join(folder, "TrimmedReads", sample + "_R1_trimmed.fastq")
+        read2 = os.path.join(folder, "TrimmedReads", sample + "_R2_trimmed.fastq")
         checkRef = reference.split(".fa")[0]
         # check if the reference was indexed
         if os.path.exists(os.path.abspath(checkRef) + ".bitmask"):
             refPres = "Reference has been indexed already"
         else: 
             refPres = "Reference has not been indexed. Indexing will begin now"
-            runBmInd = ' '.join("bmtool -d", ref, "-o", os.path.abspath(checkRef) + ".bitmask")
-            runBmPsm = ' '.join("sprism mkindex -i", ref, "-o", os.path.abspath(checkRef) + ".srprism", 
+            runBmInd = ' '.join("bmtool -d", reference, "-o", os.path.abspath(checkRef) + ".bitmask")
+            runBmPsm = ' '.join("sprism mkindex -i", reference, "-o", os.path.abspath(checkRef) + ".srprism", 
                                 "-M", memory)
             print(runBmInd)
             subprocess.call(runBmInd, shell = True)
             print(runBmPsm)
             subprocess.call(runBmPsm)
-    # make temporary output folder
+        # make temporary output folder
+        tmpOut = os.path.join(outfol, "tempOut")
+        makeDirectory(tmpOut)
+        # point to the indexed reference files
+        refr = os.path.abspath(checkRef) + ".bitmask"
+        refx = os.path.abspath(checkRef) + ".srprism"
+        # set output file
+        alOutFile = outfol + "/bmtagger.list"
+        # start alignment
+        bmTag = ' '.join("bmtagger.sh -b", refr, "-x", refx, "-T", tmpOut, "-q 1 -1", read1, "-2", read2, 
+                        "-o", alOutFile)
+        print(bmTag)
+        subprocess.call(bmTag, shell = True)
+        # get the human reads, skip them and write the non-human reads to file
+        cleanOut = os.path.join(folder, "CleanReads")
+        makeDirectory(cleanOut)
+        # make a dictionary to hold human reads
+        humanRead = {}
+        for line in open(alOutFile):
+            humanRead[line.strip()] = None
+        cleanReads1 = os.path.join(cleanOut, sample + "_R1_clean_reads.fastq")
+        # Print out the fastq file line by line unless the read is human
+        skip = False
+        cleanOut1 = open(cleanReads1, "w", newline='')
+        for i, line in enumerate(open(read1)):
+            if i%4 == 0:
+                if line[1:].split("/")[0].split()[0] in humanRead:
+                    skip = True
+                else:
+                    skip = False
+            if skip == False:
+                cleanOut1.write(line.rstrip() + "\n")
+        cleanReads2 = os.path.join(cleanOut, sample + "_R2_clean_reads.fastq")
+        skip = False
+        cleanOut2 = open(cleanReads2, "w", newline='')
+        for i, line in enumerate(open(read2)):
+            if i%4 == 0:
+                if line[1:].split("/")[0].split()[0] in humanRead:
+                    skip = True
+                else:
+                    skip = False
+            if skip == False:
+                cleanOut2.write(line.rstrip() + "\n")
+        os.rmdir(tmpOut)
+        return refPres, cleanOut, outfol
+
+
+
+        
+
     
