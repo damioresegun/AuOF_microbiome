@@ -3,15 +3,13 @@
 Author: Damilola Oresegun
 '''
 
-from asyncio import subprocess
+import subprocess
 from concurrent.futures import thread
 from distutils.archive_util import make_archive
 import os
 from pathlib import Path
 import shutil
 from tabnanny import check
-
-from AuOF_MasterControl import OUTDIR
 
 
 def makeDirectory(directory):
@@ -82,10 +80,10 @@ def fastqc(phase, inpt, outpt, threads):
             fastOut = os.path.join(outpt, fname, folName)
             makeDirectory(fastOut)
             # get the reads
-            fasfi1 = os.path.join(file, "*_R1")
-            fasfi2 = os.path.join(file, "*_R2")
+            fasfi1 = os.path.join(file, "*_R1*")
+            fasfi2 = os.path.join(file, "*_R2*")
             # build the command
-            fatq1 = ' '.join("fastqc -t", str(threads), "-o", fastOut, "-f fastq", fasfi1, fasfi2)
+            fatq1 = ' '.join(["fastqc -t", str(threads), "-o", fastOut, "-f fastq", fasfi1, fasfi2])
             print(fatq1)
             subprocess.call(fatq1, shell=True)
     elif phase == "post":
@@ -95,7 +93,7 @@ def fastqc(phase, inpt, outpt, threads):
             fasfi1 = os.path.join(inpt, fname+"_R1_clean_reads.fastq")
             fasfi2 = os.path.join(inpt, fname+"_R2_clean_reads.fastq")
             # build the command
-            fatq1 = ' '.join("fastqc -t", str(threads), "-o", outpt, "-f fastq", fasfi1, fasfi2)
+            fatq1 = ' '.join(["fastqc -t", str(threads), "-o", outpt, "-f fastq", fasfi1, fasfi2])
             print(fatq1)
             subprocess.call(fatq1, shell=True)
 
@@ -106,11 +104,11 @@ def trimmy(inpt, outpt, threads):
         trmOut = os.path.join(outpt, fname, "TrimmedReads")
         makeDirectory(trmOut)
         # get the reads
-        fasfi1 = os.path.join(i, "*_R1*")
-        fasfi2 = os.path.join(i, "*_R2*")
+        fasfi1 = os.path.join(folder, "*_R1*")
+        fasfi2 = os.path.join(folder, "*_R2*")
         # make the command
-        runTrm = ' '.join("trim-galore --no_report_file --paired --cores", str(threads),
-                        "-o", trmOut, fasfi1, fasfi2)
+        runTrm = ' '.join(["trim_galore --no_report_file --paired --cores", str(threads),
+                        "-o", trmOut, fasfi1, fasfi2])
         print("Command for trim-galore is: " + runTrm)
         subprocess.call(runTrm, shell = True)
         print("Trim-galore complete")
@@ -139,9 +137,9 @@ def bmtagAligner(inpDir, reference, memory):
             refPres = "Reference has been indexed already"
         else: 
             refPres = "Reference has not been indexed. Indexing will begin now"
-            runBmInd = ' '.join("bmtool -d", reference, "-o", os.path.abspath(checkRef) + ".bitmask")
-            runBmPsm = ' '.join("sprism mkindex -i", reference, "-o", os.path.abspath(checkRef) + ".srprism", 
-                                "-M", memory)
+            runBmInd = ' '.join(["bmtool -d", reference, "-o", os.path.abspath(checkRef) + ".bitmask"])
+            runBmPsm = ' '.join(["sprism mkindex -i", reference, "-o", os.path.abspath(checkRef) + ".srprism", 
+                                "-M", memory])
             print(runBmInd)
             subprocess.call(runBmInd, shell = True)
             print(runBmPsm)
@@ -155,8 +153,8 @@ def bmtagAligner(inpDir, reference, memory):
         # set output file
         alOutFile = outfol + "/bmtagger.list"
         # start alignment
-        bmTag = ' '.join("bmtagger.sh -b", refr, "-x", refx, "-T", tmpOut, "-q 1 -1", read1, "-2", read2, 
-                        "-o", alOutFile)
+        bmTag = ' '.join(["bmtagger.sh -b", refr, "-x", refx, "-T", tmpOut, "-q 1 -1", read1, "-2", read2, 
+                        "-o", alOutFile])
         print(bmTag)
         subprocess.call(bmTag, shell = True)
         # get the human reads, skip them and write the non-human reads to file

@@ -171,15 +171,19 @@ elif checkOut == "Good":
 ''' call functions and run pipeline'''
 ####################################################################################################################################################
 # check if input files exist and if they are zipped
-for folder in Path(INPDIR.glob('*')):
+for folder in Path(INPDIR).glob('*'):
     for file in os.listdir(str(folder)):
         zfile = os.path.join(folder, file)
         if (zfile.__contains__(".gz")):
             logger.info("Input files are zipped. Unnzipping them now")
             zipFile("compress", zfile, THREADS)
+""" for file in os.listdir(str(INPDIR)):
+    if (file.__contains__(".gz")):
+        logger.info("Input files are zipped. Unnzipping them now")
+        zipFile("compress", file, THREADS) """
 # Carry out fastqc 
 logger.info("Checking raw quality of reads")
-fastqc("pre", INPDIR, OUTDIR, THREADS)
+#fastqc("pre", INPDIR, OUTDIR, THREADS)
 logger.info("Pre quality control FastQC completed")
 # trim the reads
 logger.info("Starting trimming")

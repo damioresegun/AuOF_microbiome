@@ -2,13 +2,13 @@
 # Bash script to run the AuOF master control script during development
 # enter variable
 AuOF=/home/doresegu/scratch/private/CMC_Project/AuOF_MasterControl.py
-input=/home/doresegu/scratch/private/CMC_Project/Demultiplexed/Pin25307
+input=/home/doresegu/scratch/private/CMC_Project/Demultiplexed
 output=/home/doresegu/scratch/private/CMC_Project/Testing
 reference=/home/doresegu/scratch/private/CMC_Project/BMTAGGER_INDEX/hg38.fa
 kraken="kraken2"
 bracken="bracken"
 krakenDB=/home/doresegu/scratch/private/Kraken_DB
-threads=24
+threads=12
 memory=150000
 
 mkdir $output
