@@ -106,6 +106,9 @@ def trimmy(inpt, outpt, threads):
         # get the reads
         fasfi1 = os.path.join(folder, "*_R1*")
         fasfi2 = os.path.join(folder, "*_R2*")
+        # cutadapt only needs 8 cores maximum
+        if (threads > 8):
+            threads = 8
         # make the command
         runTrm = ' '.join(["trim_galore --no_report_file --paired --cores", str(threads),
                         "-o", trmOut, fasfi1, fasfi2])
