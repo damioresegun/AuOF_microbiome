@@ -124,6 +124,7 @@ def trimmy(inpt, outpt, threads):
             if (str(file).__contains__("R2")):
                 outFile = os.path.join(trmOut, fname + "_R2_trimmed.fastq")
                 shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+    return trmOut
 
 
 def bmtagAligner(inpDir, reference, memory):
