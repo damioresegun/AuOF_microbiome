@@ -183,7 +183,7 @@ for folder in Path(INPDIR).glob('*'):
         zipFile("compress", file, THREADS) """
 # Carry out fastqc 
 logger.info("Checking raw quality of reads")
-#fastqc("pre", INPDIR, OUTDIR, THREADS)
+fastqc("pre", INPDIR, OUTDIR, THREADS)
 logger.info("Pre quality control FastQC completed")
 # trim the reads
 logger.info("Starting trimming")
@@ -196,8 +196,13 @@ try:
     logger.info(refInd)
     logger.info("BMTAGGER outputs are in: " + bmTag)
     logger.info("The trimmed and cleaned reads are saved in: " + cleanOut)
+    logger.info("Contaminant reads have been removed. Moving on...")
 except (FileNotFoundError, FileExistsError):
     logger.info("A file was not found. Check the log file")
     logger.error("File not found. Check the reads file to ensure they are present")
+# Check the quality of the trimmed and cleaned reads
 logger.info("Starting PostQC analysis of raw reads using FastQC")
 fastqc("post", cleanOut, OUTDIR, THREADS)
+# Taxonomic classification using Kraken
+
+

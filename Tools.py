@@ -122,10 +122,10 @@ def trimmy(inpt, outpt, threads):
             print(str(file))
             if (str(file).__contains__("R1")):
                 outFile = os.path.join(trmOut, fname + "_R1_trimmed.fastq")
-                #shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+                shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
             if (str(file).__contains__("R2")):
                 outFile = os.path.join(trmOut, fname + "_R2_trimmed.fastq")
-                #shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+                shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
     return trmOut
 
 
