@@ -33,7 +33,10 @@ def prechecks(input, output):
     else:
         inp = "Failed"
     if os.path.exists(output):
-        out = "Good"
+        if not os.listdir(output):
+            out = "Good"
+        else:
+            out = "Failed"
     else:
         out = "Make"
     return inp, out
@@ -88,16 +91,17 @@ def fastqc(phase, inpt, outpt, threads):
             subprocess.call(fatq1, shell=True)
     elif phase == "post":
         folName = "PostQC_FastQC"
-        for file in Path(inpt).glob('*'):
-            fname = os.path.dirname(inpt).split("/")[-1]
-            fasfi1 = os.path.join(inpt, fname+"_R1_clean_reads.fastq")
-            fasfi2 = os.path.join(inpt, fname+"_R2_clean_reads.fastq")
-            fastOut = os.path.join(outpt, fname, folName)
+        for folder in Path(inpt).glob('*'):
+            fname = os.path.basename(folder)
+            fasfi1 = os.path.join(inpt, fname, "CleanReads", fname+"_R1_clean_reads.fastq")
+            fasfi2 = os.path.join(inpt, fname, "CleanReads", fname+"_R2_clean_reads.fastq")
+            fastOut = os.path.join(inpt, fname, folName)
             makeDirectory(fastOut)
             # build the command
             fatq1 = ' '.join(["fastqc -t", str(threads), "-o", fastOut, "-f fastq", fasfi1, fasfi2])
             print(fatq1)
             subprocess.call(fatq1, shell=True)
+    return fastOut
 
 def trimmy(inpt, outpt, threads):
     '''Function to run trim-galore for trimming forward and reverse reads'''
@@ -200,7 +204,70 @@ def bmtagAligner(inpDir, reference, memory):
     return refPres, cleanOut, outfol
 
 
+def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brklen, threads):
+    """
+    Function to carry out kraken classification then bracken abundance re-estimation
+    This is then followed by a conversion of the bracken report to krona visulisation
+    files in the form of HTML files. Additionally, the bracken report is also converted
+    to the MPA format for use downstream in HUMAnN.
 
-        
+    Parameters:
+    - isolate: isolate name
+    - inpt: folder containing clean reads
+    - outpt: root output folder. Kraken and Bracken folders will be made here
+    - krkn: path to kraken2 or the particular kraken2 command in $PATH
+    - brkn: path to bracken or the particular bracken command in $PATH
+    - krkthrs: the kraken threshold
+    - krkdb: path to the kraken database
+    - brkthrs: bracken threshold
+    - brklen: bracken minimum read/contig length
+    - threads: the number of threads to use
+    """
+    # check the output folder
+    krakOut = os.path.join(outpt, "Kraken")
+    brakOut = os.path.join(outpt, "Bracken")
+    makeDirectory(krakOut)
+    makeDirectory(brakOut)
+    krakOut = os.path.join(krakOut, isolate)
+    brakOut = os.path.join(brakOut, isolate)
+    read1 = os.path.join(inpt, isolate+"_R1_clean_reads.fastq")
+    read2 = os.path.join(inpt, isolate+"_R1_clean_reads.fastq")
+    runKrak = ([krkn, "--db", krkdb, "--paired", read1, read2, "--threads", str(threads),
+            "--output", krakOut+"_All_classifications.tsv",
+            "--report", krakOut+"_fullreport.txt", "--use-names",
+            "--unclassified-out", krakOut+"_unclassified#.fastq",
+            "--classified-out", krakOut+"_classified#.fastq", 
+            "--minimum-hit-groups", str(krkthrs), "--report-minimizer-data"])
+    print(runKrak)
+    subprocess.call(runKrak, shell = True)
+    print("Kraken completed. Continuing to bracken")
+    runBrak = ([brkn, "-d", krkdb, "-i", krakOut+"_fullreport.txt", "-o", 
+            brakOut+"_bracken_fullreport.txt", "-t", str(brkthrs), "-w",
+            brakOut+"_bracken_classicreport.txt", "-r", str(brklen)])
+    print(runBrak)
+    subprocess.call(runBrak, shell = True)
+    print("Bracken complete. Generating krona plots")
+    # generate krona plots
+    Runkrnny = (["kreport2krona.py -r", brakOut+"_bracken_classicreport.txt", 
+            "-o", brakOut+"_bracken_classicreport.krona"])
+    RunKtny = (["ktImportText", brakOut+"_bracken_classicreport.krona", 
+            "-o", brakOut+"_bracken_classicreport.html"])
+    print(Runkrnny)
+    print(RunKtny)
+    subprocess.call(Runkrnny, shell=True)
+    subprocess.call(RunKtny, shell=True)
+    # generate reports in mpa format
+    Runmpp = (["kreport2mpa3.py -r", brakOut+"_bracken_classicreport.txt", 
+                "-o", brakOut+"_bracken_classicreport.tsv", "-hm",
+                "--percentages --display-header"])
+    subprocess.call(Runmpp, shell = True)
+    # output files
+    brakRep = brakOut+"_bracken_classicreport.txt"
+    kroFle = brakOut+"_bracken_classicreport.html"
+    mpaFle = brakOut+"_bracken_classicreport.tsv"
+    return brakRep, kroFle, mpaFle
+
+
+
 
     

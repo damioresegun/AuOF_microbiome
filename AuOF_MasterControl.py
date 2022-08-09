@@ -3,7 +3,7 @@
 #
 #                               Script to carry out workflow control of microbiome analysis for the Antibiotics Under our Feet project
 # 
-# Requires: Via conda(fastqc, trim-galore, bmtagger, kraken2, bracken, krona, krakentools)
+# Requires: Via conda(fastqc, trim-galore, bmtagger, kraken2, bracken, krona, krakentools (forked byb DRO))
 # Considerations: Remove need for kraken and bracken path arguments. Force installation via conda
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
@@ -17,8 +17,9 @@ import sys
 import argparse
 import subprocess
 from pathlib import Path
+from MasterControl import krabracken
 
-from Tools import bmtagAligner, fastqc, makeDirectory, prechecks, trimmy, zipFile
+from Tools import bmtagAligner, fastqc, krakbracken, makeDirectory, prechecks, trimmy, zipFile
 ####################################################################################################
 # set the needed arguments
 def get_args():
@@ -158,7 +159,7 @@ if __name__ == '__main__':
 checkInp, checkOut = prechecks(INPDIR, OUTDIR)
 if checkInp == "Good":
     logger.info("Input files exists. Files will be checked downstream")
-elif checkInp == "Bad":
+elif checkInp == "Failed":
     logger.info("Script failed. Check error logs for more information")
     logger.error("Script failed to recognise your input directory. Does it exist? " +
                     "Please check and try again.")
@@ -166,7 +167,10 @@ if checkOut == "Make":
     logger.info("Output directory does not exist. Making this")
     makeDirectory(OUTDIR)
 elif checkOut == "Good":
-    logger.info("Output directory already exists. Will be using this.")
+    logger.info("Output directory already exists and empty. Will be using this.")
+elif checkOut == "Failed":
+    logger.info("Output directory already exists and is not empty." +
+                "Please direct the script to either an empty folder or unmade path")
 ####################################################################################################################################################
 ''' call functions and run pipeline'''
 ####################################################################################################################################################
@@ -183,8 +187,9 @@ for folder in Path(INPDIR).glob('*'):
         zipFile("compress", file, THREADS) """
 # Carry out fastqc 
 logger.info("Checking raw quality of reads")
-fastqc("pre", INPDIR, OUTDIR, THREADS)
+fastQ = fastqc("pre", INPDIR, OUTDIR, THREADS)
 logger.info("Pre quality control FastQC completed")
+logger.info("FastQC completed. Quality check of clean reads is in: " + fastQ)
 # trim the reads
 logger.info("Starting trimming")
 trimmedReads = trimmy(INPDIR, OUTDIR, THREADS)
@@ -202,7 +207,22 @@ except (FileNotFoundError, FileExistsError):
     logger.error("File not found. Check the reads file to ensure they are present")
 # Check the quality of the trimmed and cleaned reads
 logger.info("Starting PostQC analysis of raw reads using FastQC")
-fastqc("post", cleanOut, OUTDIR, THREADS)
+fastQ = fastqc("post", OUTDIR, OUTDIR, THREADS) # this is done on purpose
+logger.info("FastQC completed. Quality check of clean reads is in: " + fastQ)
 # Taxonomic classification using Kraken
+# make a dictionary to hold the paths to bracken, krona and mpa outputs
+brakRep = {}
+kronaFls = {}
+mpaFls = {}
+for folder in Path(os.path.abspath(OUTDIR)).glob('*'):
+    if (str(folder).__contains__(".")):
+        continue
+    else:
+        fname = os.path.basename(folder)
+        cReadsFol = os.path.join(folder, "CleanReads")
+        brakRep, kronaFls, mpaFls = krakbracken(fname, cReadsFol, 
+                    folder, KRAK, BRAK, KRAK_THRESH, KRAKDB,
+                    BRAKTHRESH, BRAKLENGTH, THREADS)
+        
 
-
+    
