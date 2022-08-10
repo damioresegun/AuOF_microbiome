@@ -4,12 +4,9 @@ Author: Damilola Oresegun
 '''
 
 import subprocess
-from concurrent.futures import thread
-from distutils.archive_util import make_archive
 import os
 from pathlib import Path
 import shutil
-from tabnanny import check
 
 
 def makeDirectory(directory):
@@ -119,7 +116,7 @@ def trimmy(inpt, outpt, threads):
         runTrm = ' '.join(["trim_galore --no_report_file --paired --cores", str(threads),
                         "-o", trmOut, fasfi1, fasfi2])
         print("Command for trim-galore is: " + runTrm)
-        #subprocess.call(runTrm, shell = True)
+        subprocess.call(runTrm, shell = True)
         print("Trim-galore complete")
         # now rename the files
         for file in Path(trmOut).glob('*'):
@@ -204,7 +201,7 @@ def bmtagAligner(inpDir, reference, memory):
     return refPres, cleanOut, outfol
 
 
-def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brklen, threads):
+def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brklen, threads, ktool):
     """
     Function to carry out kraken classification then bracken abundance re-estimation
     This is then followed by a conversion of the bracken report to krona visulisation
@@ -231,7 +228,7 @@ def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brkle
     krakOut = os.path.join(krakOut, isolate)
     brakOut = os.path.join(brakOut, isolate)
     read1 = os.path.join(inpt, isolate+"_R1_clean_reads.fastq")
-    read2 = os.path.join(inpt, isolate+"_R1_clean_reads.fastq")
+    read2 = os.path.join(inpt, isolate+"_R2_clean_reads.fastq")
     runKrak = ([krkn, "--db", krkdb, "--paired", read1, read2, "--threads", str(threads),
             "--output", krakOut+"_All_classifications.tsv",
             "--report", krakOut+"_fullreport.txt", "--use-names",
@@ -248,7 +245,7 @@ def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brkle
     subprocess.call(runBrak, shell = True)
     print("Bracken complete. Generating krona plots")
     # generate krona plots
-    Runkrnny = (["kreport2krona.py -r", brakOut+"_bracken_classicreport.txt", 
+    Runkrnny = ([ktool+"/kreport2krona.py -r", brakOut+"_bracken_classicreport.txt", 
             "-o", brakOut+"_bracken_classicreport.krona"])
     RunKtny = (["ktImportText", brakOut+"_bracken_classicreport.krona", 
             "-o", brakOut+"_bracken_classicreport.html"])
@@ -257,7 +254,7 @@ def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brkle
     subprocess.call(Runkrnny, shell=True)
     subprocess.call(RunKtny, shell=True)
     # generate reports in mpa format
-    Runmpp = (["kreport2mpa3.py -r", brakOut+"_bracken_classicreport.txt", 
+    Runmpp = ([ktool+"/kreport2mpa3.py -r", brakOut+"_bracken_classicreport.txt", 
                 "-o", brakOut+"_bracken_classicreport.tsv", "-hm",
                 "--percentages --display-header"])
     subprocess.call(Runmpp, shell = True)
@@ -268,6 +265,29 @@ def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brkle
     return brakRep, kroFle, mpaFle
 
 
-
-
-    
+def humann3(isolate, inpt, humann, krakmpa, outpt, threads):
+    '''
+    Function to carry out functional profiling using HUMAnN version 3.1.1
+    Takes in the isolate name, the path to the folder containing
+    paired-end reads and the path to the human executable. Additionally
+    a taxonomic profile file in the metaphlan format is needed, the path 
+    to an output folder and the number of threads is also needed.
+    Returns the path to the output folder
+    '''
+    reads = [os.path.join(inpt, isolate+"_R1_clean_reads.fastq"), 
+            os.path.join(inpt, isolate+"_R2_clean_reads.fastq")]
+    # concatenate into one fastq file
+    outReads = os.path.join(inpt, isolate+"_combinedReads.fastq")
+    with open(outReads, "w") as allReads:
+        for file in reads:
+            with open(file) as f:
+                for line in f:
+                    allReads.write(line)
+                allReads.write("\n")
+    humanOut = os.path.join(outpt, "HUMAnN")
+    makeDirectory(humanOut)
+    runHum = ([humann, "--input", outReads, "--output", humanOut, 
+                "--taxonomic-profile", krakmpa, "--threads", str(threads)])
+    print(runHum)
+    subprocess.call(runHum, shell = True)
+    return humanOut    

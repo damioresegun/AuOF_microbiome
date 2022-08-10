@@ -7,19 +7,15 @@
 # Considerations: Remove need for kraken and bracken path arguments. Force installation via conda
 # Author: Damilola Oresegun	                                                                                                                                 		              #
 ###########################################################################################################################################################
-import enum
 import logging
 import logging.handlers
 import time
 import os
-import shutil
 import sys
 import argparse
-import subprocess
 from pathlib import Path
-from MasterControl import krabracken
 
-from Tools import bmtagAligner, fastqc, krakbracken, makeDirectory, prechecks, trimmy, zipFile
+from Tools import bmtagAligner, fastqc, humann3, krakbracken, makeDirectory, prechecks, trimmy, zipFile
 ####################################################################################################
 # set the needed arguments
 def get_args():
@@ -64,6 +60,12 @@ def get_args():
                                 type = str,
                                 help = "Full path to your Kraken database",
                                 required = True)
+    required_args.add_argument("-dk", "--kraken_tools", dest="KrakenTools",
+                                action = "store",
+                                type = str,
+                                help = "Full path to the KrakenTools package forked by DRO." +
+                                "Link: https://github.com/damioresegun/KrakenTools.git",
+                                required = True)
     ################################################################################################
     optional_args = parser.add_argument_group('Optional arguments')
     optional_args.add_argument("-t", "--threads", dest = "Threads",
@@ -97,6 +99,12 @@ def get_args():
                                 help = "The kmer length used to build your bracken database. " +
                                 "Note: Your bracken database is also the kraken database. " +
                                 "Default length is [100]")
+    optional_args.add_argument("-f", "--functional", dest = "HUMAnN",
+                                action = "store", 
+                                type = str,
+                                default = "humann",
+                                help = "Full path to the humannv3+ package if not in $PATH." +
+                                "If in $PATH, this parameter is not necessary'. Default is [humann]")
     ################################################################################################
     args = parser.parse_args()
     return args
@@ -114,6 +122,8 @@ KRAK_THRESH = args.Kraken_Hit_Threshold
 BRAK = args.Bracken_PATH
 BRAKTHRESH = args.Bracken_Hit_Threshold
 BRAKLENGTH = args.Bracken_Kmer_Length
+KRAKTOOLS = args.KrakenTools
+HUMANN = args.HUMAnN
 ####################################################################################################################################################
 ''' Run the script and functions '''
 ####################################################################################################################################################
@@ -211,18 +221,41 @@ fastQ = fastqc("post", OUTDIR, OUTDIR, THREADS) # this is done on purpose
 logger.info("FastQC completed. Quality check of clean reads is in: " + fastQ)
 # Taxonomic classification using Kraken
 # make a dictionary to hold the paths to bracken, krona and mpa outputs
-brakRep = {}
-kronaFls = {}
-mpaFls = {}
+brakRep = []
+kronaFls = []
+mpaFls = []
 for folder in Path(os.path.abspath(OUTDIR)).glob('*'):
     if (str(folder).__contains__(".")):
         continue
     else:
         fname = os.path.basename(folder)
         cReadsFol = os.path.join(folder, "CleanReads")
-        brakRep, kronaFls, mpaFls = krakbracken(fname, cReadsFol, 
+        brakRepr, kronaFlr, mpaFlr = krakbracken(fname, cReadsFol, 
                     folder, KRAK, BRAK, KRAK_THRESH, KRAKDB,
-                    BRAKTHRESH, BRAKLENGTH, THREADS)
-        
-
-    
+                    BRAKTHRESH, BRAKLENGTH, THREADS, KRAKTOOLS)
+        brakRep.append(brakRepr)
+        kronaFls.append(kronaFlr)
+        mpaFls.append(mpaFlr)
+logger.info("Taxonomic classification completed")
+logger.info("Bracken reports are saved in these file(s): " + str(brakRep))
+logger.info("Krona charts have been generated to be viewed in a browswer")
+logger.info("Krona visualisation files have been saved in: " + str(kronaFls))
+logger.info("The bracken report has also been converted to a metaphlan-compliant output")
+logger.info("The metaphlan outputs are to be used with HUMAnN functional profiling")
+logger.info("Bracken to metaphlan converted reports are saved in: " + str(mpaFls))
+# Functional profiling using HUMAnN
+humanFunc = []
+for folder in Path(os.path.abspath(OUTDIR)).glob('*'):
+    if (str(folder).__contains__(".")):
+        continue
+    else:
+        fname = os.path.basename(folder)
+        cReadsFol = os.path.join(folder, "CleanReads")
+        for file in mpaFls:
+            if (str(file).__contains__(fname)):
+                taxprofile = file
+        humanOut = humann3(fname, cReadsFol, HUMANN, taxprofile, OUTDIR, THREADS) 
+        humanFunc.append(humanOut)
+logger.info("Functional profiling completed")
+logger.info("Functional profiles are saved in: " + humanFunc)
+logger.info("AuOF pipeline completed")    
