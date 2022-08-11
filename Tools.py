@@ -89,15 +89,18 @@ def fastqc(phase, inpt, outpt, threads):
     elif phase == "post":
         folName = "PostQC_FastQC"
         for folder in Path(inpt).glob('*'):
-            fname = os.path.basename(folder)
-            fasfi1 = os.path.join(inpt, fname, "CleanReads", fname+"_R1_clean_reads.fastq")
-            fasfi2 = os.path.join(inpt, fname, "CleanReads", fname+"_R2_clean_reads.fastq")
-            fastOut = os.path.join(inpt, fname, folName)
-            makeDirectory(fastOut)
-            # build the command
-            fatq1 = ' '.join(["fastqc -t", str(threads), "-o", fastOut, "-f fastq", fasfi1, fasfi2])
-            print(fatq1)
-            subprocess.call(fatq1, shell=True)
+            if (str(folder).__contains__(".log")):
+                continue
+            else:
+                fname = os.path.basename(folder)
+                fasfi1 = os.path.join(inpt, fname, "CleanReads", fname+"_R1_clean_reads.fastq")
+                fasfi2 = os.path.join(inpt, fname, "CleanReads", fname+"_R2_clean_reads.fastq")
+                fastOut = os.path.join(inpt, fname, folName)
+                makeDirectory(fastOut)
+                # build the command
+                fatq1 = ' '.join(["fastqc -t", str(threads), "-o", fastOut, "-f fastq", fasfi1, fasfi2])
+                print(fatq1)
+                subprocess.call(fatq1, shell=True)
     return fastOut
 
 def trimmy(inpt, outpt, threads):
