@@ -79,16 +79,16 @@ kraken2-build --download-library plant --db Kraken_DB --threads 12 --no-masking
 kraken2-build --download-library plasmids --db Kraken_DB --threads 12 --no-masking
 ```
 - In some instances, an error might occur during the installation of the database after running the `kraken2-build` command:
-	```bash
+```bash
 ERROR: "rsync_from_ncbi.pl: unexpected FTP path (new server?) for https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/128/725/GCF_900128725.1_BCifornacula_v1.0"
-	```
-	- This can be solved by opening the `rsync_from_ncbi.pl` script that is installed along with kraken2 and change line below:
-	```perl
+```
+- This can be solved by opening the `rsync_from_ncbi.pl` script that is installed along with kraken2 and change line below:
+```perl
 # original line
 if (! ($full_path =~ s#^ftp://${qm_server}${qm_server_path}/##)) { 
 # changed to:
 if (! ($full_path =~ s#^https://${qm_server}${qm_server_path}/##)) {
-	```
+```
 - Other errors that can come up during installation is: `rsync_from_ncbi.pl: unexpected FTP path (new server?) for na`
 	- To fix this, the `assembly_summary.txt` that is created from the `kraken2-build` command has to be fixed. This means:
 	``` bash
