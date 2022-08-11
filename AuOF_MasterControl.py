@@ -104,7 +104,7 @@ def get_args():
                                 type = str,
                                 default = "humann",
                                 help = "Full path to the humannv3+ package if not in $PATH." +
-                                "If in $PATH, this parameter is not necessary'. Default is [humann]")
+                                "If in $PATH, this parameter is not necessary. Default is [humann]")
     ################################################################################################
     args = parser.parse_args()
     return args

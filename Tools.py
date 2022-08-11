@@ -232,7 +232,7 @@ def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brkle
     brakOut = os.path.join(brakOut, isolate)
     read1 = os.path.join(inpt, isolate+"_R1_clean_reads.fastq")
     read2 = os.path.join(inpt, isolate+"_R2_clean_reads.fastq")
-    runKrak = ([krkn, "--db", krkdb, "--paired", read1, read2, "--threads", str(threads),
+    runKrak = ' '.join([krkn, "--db", krkdb, "--paired", read1, read2, "--threads", str(threads),
             "--output", krakOut+"_All_classifications.tsv",
             "--report", krakOut+"_fullreport.txt", "--use-names",
             "--unclassified-out", krakOut+"_unclassified#.fastq",
@@ -241,23 +241,23 @@ def krakbracken(isolate, inpt, outpt, krkn, brkn, krkthrs, krkdb, brkthrs, brkle
     print(runKrak)
     subprocess.call(runKrak, shell = True)
     print("Kraken completed. Continuing to bracken")
-    runBrak = ([brkn, "-d", krkdb, "-i", krakOut+"_fullreport.txt", "-o", 
+    runBrak = ' '.join([brkn, "-d", krkdb, "-i", krakOut+"_fullreport.txt", "-o", 
             brakOut+"_bracken_fullreport.txt", "-t", str(brkthrs), "-w",
             brakOut+"_bracken_classicreport.txt", "-r", str(brklen)])
     print(runBrak)
     subprocess.call(runBrak, shell = True)
     print("Bracken complete. Generating krona plots")
     # generate krona plots
-    Runkrnny = ([ktool+"/kreport2krona.py -r", brakOut+"_bracken_classicreport.txt", 
+    Runkrnny = ' '.join([ktool+"/kreport2krona.py -r", brakOut+"_bracken_classicreport.txt", 
             "-o", brakOut+"_bracken_classicreport.krona"])
-    RunKtny = (["ktImportText", brakOut+"_bracken_classicreport.krona", 
+    RunKtny = ' '.join(["ktImportText", brakOut+"_bracken_classicreport.krona", 
             "-o", brakOut+"_bracken_classicreport.html"])
     print(Runkrnny)
     print(RunKtny)
     subprocess.call(Runkrnny, shell=True)
     subprocess.call(RunKtny, shell=True)
     # generate reports in mpa format
-    Runmpp = ([ktool+"/kreport2mpa3.py -r", brakOut+"_bracken_classicreport.txt", 
+    Runmpp = ' '.join([ktool+"/kreport2mpa3.py -r", brakOut+"_bracken_classicreport.txt", 
                 "-o", brakOut+"_bracken_classicreport.tsv", "-hm",
                 "--percentages --display-header"])
     subprocess.call(Runmpp, shell = True)
@@ -289,7 +289,7 @@ def humann3(isolate, inpt, humann, krakmpa, outpt, threads):
                 allReads.write("\n")
     humanOut = os.path.join(outpt, "HUMAnN")
     makeDirectory(humanOut)
-    runHum = ([humann, "--input", outReads, "--output", humanOut, 
+    runHum = ' '.join([humann, "--input", outReads, "--output", humanOut, 
                 "--taxonomic-profile", krakmpa, "--threads", str(threads)])
     print(runHum)
     subprocess.call(runHum, shell = True)
