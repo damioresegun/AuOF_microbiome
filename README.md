@@ -1,11 +1,11 @@
 # README
-
+<!--toc-->
 - [AuOF](#AuOF)
 	- [Overview](##Overview)
 	- [Installation](##Installation)
 		- [Beware](###Beware)
 		- [Package](###Package)
-		- 
+<!--toc-->
 
 # AuOF
 ## Overview
