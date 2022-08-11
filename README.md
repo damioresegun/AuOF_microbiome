@@ -29,4 +29,9 @@ A pipeline to carry out processing and analysis of metagenomic whole genome sequ
 		```
 		git clone git@github.com:damioresegun/KrakenTools.git
 		```
-	- 
+### CONDA/MAMBA
+The rest of the tools are easily installed using conda. If you have mamba, it is recommended to use mamba as it is quicker to use.
+#### Install MAMBA
+`conda install mamba -n base -c conda-forge`
+#### Install packages
+
