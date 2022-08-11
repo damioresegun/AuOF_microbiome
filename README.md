@@ -96,7 +96,7 @@ if (! ($full_path =~ s#^https://${qm_server}${qm_server_path}/##)) {
 		# there should be a file named: assembly_summary.txt
 		awk -v FS='\t' '$20 != "na" {print $0}' assembly_summary.txt > new_assembly_summary.txt 
 		cp new_assembly_summary.txt assembly_summary.txt
-		```
+	```
 #### Bracken
 Once bracken is installed with conda and the kraken database has been downloaded as described above, the bracken index can be built with:
 ```bash
