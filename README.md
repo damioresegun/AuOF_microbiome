@@ -1,12 +1,12 @@
 # README
-<!--toc-->
+<!-- toc -->
 - [AuOF](#AuOF)
 	- [Overview](##Overview)
 	- [Installation](##Installation)
 		- [Beware](###Beware)
 		- [Package](###Package)
-<!--toc-->
-
+		- 
+<!-- tocstop -->
 # AuOF
 ## Overview
 A pipeline to carry out processing and analysis of metagenomic whole genome sequences as part of the Antibiotics under our feet project. While the pipeline is able to automate a majority of the process, downstream analyses still requires further manual intervention. Additionally user input is required to configure the running the pipeline. The pipeline is primarily written in python3 with the running script written in Bash/Shell. 
@@ -30,8 +30,30 @@ A pipeline to carry out processing and analysis of metagenomic whole genome sequ
 		git clone git@github.com:damioresegun/KrakenTools.git
 		```
 ### CONDA/MAMBA
-The rest of the tools are easily installed using conda. If you have mamba, it is recommended to use mamba as it is quicker to use.
-#### Install MAMBA
-`conda install mamba -n base -c conda-forge`
-#### Install packages
 
+The rest of the tools are easily installed using conda. If you have mamba, it is recommended to use mamba as it is quicker to use.
+
+#### Install MAMBA
+
+`conda install mamba -n base -c conda-forge`
+
+#### Install packages
+##### Tools and Versions
+| Tools       | Version |
+| ----------- | ------- |
+| BMTAGGER    | 3.101   |
+| Bracken     | 2.6.2   |
+| Cutadapt    | 1.18    |
+| FastQC      | 0.11.9  |
+| Humann      | 3.1.1   |
+| Kraken2     | 2.1.2   |
+| Krona       | 2.8.1   |
+| Pigz        | 2.6     |
+| Pip         | 22.1.1  |
+| Python      | 3.7.12  |
+| R           | 3.2.2   |
+| Samtools    | 0.1.19  |
+| Trim-galore | 0.6.7   |
+
+## Pipeline Options
+- `-i/--input`: The path to the directory holding the demultiplexed FASTQ files. FASTQ files can be gzipped or left uncompressed. **Note:** The FASTQ files have to be named with _1 and _2
