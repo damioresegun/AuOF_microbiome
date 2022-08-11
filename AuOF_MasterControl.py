@@ -92,7 +92,7 @@ def get_args():
                                 help = "A minimum number of kmers that must be matched to place " +
                                 "a contig into a taxonomic group by bracken re-estimation. " +
                                 "Default is [20]")
-    optional_args.add_argument("-bl", "--bracken_kmer_length", dest = "Bracken_Kmer_Length",
+    optional_args.add_argument("-bl", "--bracken_read_length", dest = "Bracken_Read_Length",
                                 action = "store",
                                 type = int,
                                 default = 100,
@@ -121,7 +121,7 @@ KRAKDB = args.Kraken_DB
 KRAK_THRESH = args.Kraken_Hit_Threshold
 BRAK = args.Bracken_PATH
 BRAKTHRESH = args.Bracken_Hit_Threshold
-BRAKLENGTH = args.Bracken_Kmer_Length
+BRAKLENGTH = args.Bracken_Read_Length
 KRAKTOOLS = args.KrakenTools
 HUMANN = args.HUMAnN
 ####################################################################################################################################################
