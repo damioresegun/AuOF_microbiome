@@ -5,7 +5,7 @@ AuOF=/home/doresegu/scratch/private/CMC_Project/AuOF_MasterControl.py
 # enter the path to the folder holding the directories of the reads
 input=/home/doresegu/scratch/private/CMC_Project/Demultiplexed
 # full path to the output folder
-output=/home/doresegu/scratch/private/CMC_Project/Tester
+output=/home/doresegu/scratch/private/CMC_Project/AuOF_Revamp
 # path to the reference genome for decontamination
 reference=/home/doresegu/scratch/private/CMC_Project/BMTAGGER_INDEX/hg38.fa
 # path to the kraken2 package. If in the $PATH then just enter kraken2

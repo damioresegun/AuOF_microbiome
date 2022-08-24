@@ -257,5 +257,15 @@ for folder in Path(os.path.abspath(OUTDIR)).glob('*'):
         humanOut = humann3(fname, cReadsFol, HUMANN, taxprofile, OUTDIR, THREADS) 
         humanFunc.append(humanOut)
 logger.info("Functional profiling completed")
-logger.info("Functional profiles are saved in: " + humanFunc)
+logger.info("Functional profiles are saved in: " + str(humanFunc))
+logger.info("Converting classification outputs to biom files for statistical analyses")
+# conversion to biom
+biomOut = os.path.join(OUTDIR, "BiomFiles")
+comBiom, runErr = makeBiom(OUTDIR, biomOut)
+if runErr == "Good":
+    logger.info("Biom files for each isolate are saved in: " + biomOut)
+    logger.info("The combined biom file for all isolates is saved as: " + comBiom)
+elif runErr == "Failed":
+    logger.info("Error. File not found. Have a look to see if the bracken file paths are correct")
+    logger.error("Error. File not found. Have a look to see if the bracken file paths are correct")
 logger.info("AuOF pipeline completed")    
