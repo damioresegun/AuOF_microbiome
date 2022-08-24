@@ -15,7 +15,7 @@ import sys
 import argparse
 from pathlib import Path
 
-from Tools import bmtagAligner, fastqc, humann3, krakbracken, makeDirectory, prechecks, trimmy, zipFile
+from Tools import bmtagAligner, fastqc, humann3, krakbracken, makeBiom, makeDirectory, prechecks, trimmy, zipFile
 ####################################################################################################
 # set the needed arguments
 def get_args():
