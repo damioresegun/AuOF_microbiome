@@ -105,6 +105,28 @@ def get_args():
                                 default = "humann",
                                 help = "Full path to the humannv3+ package if not in $PATH." +
                                 "If in $PATH, this parameter is not necessary. Default is [humann]")
+    optional_args.add_argument("-ma", "--microbiome_analysis", dest="MicrobiomeAnalysis",
+                                action = "store_true",
+                                help = "Option to carry out additional microbiome analysis using R. " +
+                                "Be aware that you must have R installed and in the PATH")
+    optional_args.add_argument("-oi", "--output_image", dest="ImageFormat",
+                                action = "store",
+                                type = str,
+                                default = "png",
+                                help = "Image format to output generated plots from microbiome " +
+                                "analysis R script. Can be 'png' or 'tiff'. Only useful when carrying" +
+                                " out additional microbiome analysis. Default is [png].")
+    optional_args.add_argument("-sm", "--sample_metadata", dest = "Sample_Metadata",
+                                action = "store", 
+                                type = str,
+                                help = "Full path to the sample metadata to be used for the " +
+                                "microbiome analysis. Example sample metadata CSV file is given. " +
+                                "If the headers of the example file do not fit your needs, change " +
+                                "them however, this will also affect the R script. Please ensure to " +
+                                "check the R script in case, this will affect you. For best outcome, " +
+                                "do not change the example file, fill in your sample metadata as " +
+                                "needed. Leave blank columns if you do not need them. The most " + 
+                                "important information needed are the 'Isolate' and 'Location' columns")
     ################################################################################################
     args = parser.parse_args()
     return args
@@ -124,6 +146,9 @@ BRAKTHRESH = args.Bracken_Hit_Threshold
 BRAKLENGTH = args.Bracken_Read_Length
 KRAKTOOLS = args.KrakenTools
 HUMANN = args.HUMAnN
+MICROANAL = args.MicrobiomeAnalysis
+OUTIMAGE = args.ImageFormat
+SAMDATA = args.Sample_Metadata
 ####################################################################################################################################################
 ''' Run the script and functions '''
 ####################################################################################################################################################
@@ -268,4 +293,8 @@ if runErr == "Good":
 elif runErr == "Failed":
     logger.info("Error. File not found. Have a look to see if the bracken file paths are correct")
     logger.error("Error. File not found. Have a look to see if the bracken file paths are correct")
+# use the combined biom to run the microbiome analysis
+if MICROANAL
+logger.info("Running Microbiome Analysis on the combined biom file")
+
 logger.info("AuOF pipeline completed")    
