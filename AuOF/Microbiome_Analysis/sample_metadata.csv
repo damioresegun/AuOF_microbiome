@@ -1,4 +1,4 @@
-Sample,Location,Region,Sample_Type,Sample_Texture,Sample_Vegetation,Sample_pH,Sample_Temperature,Environment,Sample_Mass
+Isolate,Location,Region,Sample_Type,Sample_Texture,Sample_Vegetation,Sample_pH,Sample_Temperature,Environment,Sample_Mass
 Pin25307,St Andrews,Fife,Soil,Sandy Loam,Grass,N.A,N.A,Wet,69
 Pin25708,Leven,Fife,Soil,Sandy Loam,Grass,7,20,N.A,135
 Pin25825,St Andrews,Fife,Soil,N.A,Grass,N.A,N.A,Wet,1000
