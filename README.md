@@ -10,6 +10,22 @@
 # AuOF
 ## Overview
 A pipeline to carry out processing and analysis of metagenomic whole genome sequences as part of the Antibiotics under our feet project. While the pipeline is able to automate a majority of the process, downstream analyses still requires further manual intervention. Additionally user input is required to configure the running the pipeline. The pipeline is primarily written in python3 with the running script written in Bash/Shell. The pipeline takes in paired-end Illumina short read sequences from a metagenomic source. It has been extensively tested and developed using Illumina short read sequences from metagenomic soil samples.
+### Pipeline
+```mermaid
+flowchart LR
+a0[Raw Reads] --> a[Pre-trim QC]
+a --> b[Trim adapters and quality]
+b --> c[Remove reference contamination]
+c --> d[Post-trim QC]
+d --> d0{Clean Reads}
+d0 --> e[Taxonomic Classification]
+d0 --> e0[Functional Profiling]
+e --> e0
+e --> f[Abundance Estimation]
+f --> g[Visualisation Analysis]
+g --> h[Krona charts]
+g --> i[Microbiome Analysis with R]
+```
 ## Installation
 ### Beware
 - The pipeline was developed using the full NCBI RefSeq database for taxonomic profiling. This means ~130GB of storage is required for a similar set up.
@@ -135,7 +151,7 @@ humann_databases --download uniref uniref90_diamond HUMANN_DB/
 ### Required Parameters
 - `-i /--input`: The path to the directory holding the demultiplexed FASTQ files. FASTQ files can be gzipped or left uncompressed. **Note:** The FASTQ files have to be named with _1 and _2
 - `-o /--output`: Full path to the directory to save analysis outputs. This folder should either be empty or not created yet. The pipeline will check if the folder is already created -- if so, the pipeline will continue only IF the folder is empty
-- `-r /--reference`: Full path to the human reference genome to use for decontamination. In theory, this can be any other reference genome and the script can be tweaked to accept more than one reference genome for decontamination
+- `-r /--reference`: Full path to the reference genome to use for decontamination. In theory, this can be any other reference genome and the script can be tweaked to accept more than one reference genome for decontamination. In testing, the human reference genome *hg19* was used.
 - `-kr /--kraken`: Full path to your kraken installation if it is not in the $PATH. If in your $PATH, simply write `-kr kraken2`
 - `-br /--bracken`: Full path to your bracken installation if it is not in the $PATH. If in your $PATH, simply write `-br bracken`
 - `-kb /--kraken_DB`: Full path to the kraken database you have built
@@ -166,23 +182,85 @@ To make configuration easier, the `config.sh` file was added to allow the user t
 - `brakRead`: State the bracken read length. Example: `brakRead=100`
 - `humann3`: Full path to the humann package or if in $PATH enter `humann`. Example: `humann3="humann"` or `humann3=/path/to/my/HUMAnN/folder/humann`
 
-### Running the pipeline
-```mermaid
-flowchart LR
-a0[Raw Reads] --> a[Pre-trim QC]
-a --> b[Trim adapters and quality]
-b --> c[Remove human contamination]
-c --> d[Post-trim QC]
-d --> d0{Clean Reads}
-d0 --> e[Taxonomic Classification]
-d0 --> e0[Functional Profiling]
-e0 --> e1[Under development]
-e --> f[Abundance Estimation]
-f --> g[Visualisation Analysis]
-g --> h[Krona charts]
-g --> i[Rscript In-depth]
-```
+### Pipeline Breakdown
+#### QC and Filtering
+- Initial quality checks are done using FastQC before adapter and quality trimming occurs with trim-galore
+- **FastQC:** called using the `fastqc` function in the `Tools.py` script. Requires a `pre` or `post` description to determine if the input data is pre or post contamination removal
+- **Trim-galore:** called using the `trimmy` function in the `Tools.py` script. Runs trim-galore on the forward and reverse reads. Outputs trimmed forward and reverse reads in the stated output folder
+- **Remove reference contamination:** While these are soil samples, there will be human sequences in the samples to remove. This is done using BMTAGGER with the `bmtagAligner` function in the `Tools.py` script
+#### Taxonomic Classification
+- Clean reads are taxonomically classified using Kraken2 and then the abundance reestimation occurs using bracken. 
+- **Kraken2** and **Bracken** are called using the `krakbracken` in the `Tools.py` script. See the function to see the usage and parameters used.
+- The outputs after bracken are important for functional analysis and the visualisation downstream
+#### Functional Profiling
+- The bracken output reports are converted to a metaphlan format using krakentools `kreport2mpa3.py`
+- The conversion occurs within the `krakbracken` function workflow
+- The generated metaphlan-style taxonomic information is used as input for the `humann3` function in the `Tools.py` for functional profiling 
+- Outputs three tables detailing the functional gene families, functional pathway abundance and coverages
+#### Visualisation Analyses
+- **Krona** The bracken output reports are converted to Krona charts in the form of `.html` files. These files can be opened in a browser to view, investigate and analyse
+- **Microbiome community analysis**: The bracken outputs are also combined and converted into `.biom` files which can be used to investigate microbiome composition using R. 
+	- Using a **GUI** like **Rstudio**, the **MicrobiomeAnalysis_GUI.R** can be used to investigate community composition, abundance and diversity
+	- To run, the script requires:
+		- full path to the **biom file**
+		- full path to the **output folder** (this has to already exist!)
+		- full path to the **sample metadata**
+		- **png** or **tiff** for image format
+	- Plots and tables are generated in the output folder
+	- Open the R script file for more information
+	- **NOTE: There is a command line version of this script: "MicrobiomeAnalysis_cml.R". However, this is not recommended for use. In testing, it is often temperamental and requires some fixes.**
 
+## Outputs
+Outputs are generated for each isolate with a folder made for each folder and the results of each analysis step are placed in associated folders. For each major step, the folders to be generated and their contents are described below.
+### QC and Filtering
+#### PreQC_FastQC
+- Contains the outputs of the first quality checks on the raw demultiplexed data
+- Recommended to open the `.html` files and view the outputs on a browser
+#### BMTAG
+- Contains the list of reads identified to be contaminated with the input reference genome provided by the user. In testing, the human genome was used as reference
+- *You do not need to open this file and can be deleted if space is required*
+#### TrimmedReads
+- Contains the outputs of `trim-galore`. 4 files are created however the `_R*_trimmed` are copies that will be used by the pipelines downstream
+#### CleanReads
+- Contains the reads after removing the reference contamination (`_R*_clean_reads`)
+- For the HUMAnN functional profiling step, the clean reads have to be combined into a single file, this results in the file saved as `_combinedReads`
+#### PostQC_FastQC
+- Similar outputs to the `PreQC` however, contains the outputs of quality check on reads after trimming and reference contamination removal
+### Taxonomic Classification
+#### Kraken
+- Contains the outputs of the taxonomic classification by Kraken2 **only**
+- `All_classification.tsv` - contains a full classification information however this is not human readable. This classification is used to generate the report file
+- `_fullreport.txt` - is the human-readable report file for the taxonomic classifications given to the isolate. See more information, see: https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#sample-report-output-format
+- `_classified_*.fastq` - are the reads which have been successfully classified by Kraken2. Each read will contain the identified taxid in the readID
+- `_unclassified_*.fastq` - are the reads which were not classified with kraken2
+#### Bracken
+- Contains the outputs from the bracken re-estimation of the krona taxonomic assignments
+- Also contains the converted krona files for visualisation. See the visualisation step below
+- `bracken_classicreport.txt` - is the abundance re-estimation of the kraken2 outputs. It is saved in a similar format to the original kraken2 `fullreport.txt`. This file will be converted to biom files and metaphlan downstream
+- `bracken_fullreport.txt` - contains the un-interpreted re-estimation values for the classified reads. Shows:
+	- the taxid
+	- the number of reads kraken assigns to the taxid
+	- the number of reads that has been added to the taxid **after** bracken re-estimation
+	- the new estimated number of reads assigned to the taxid
+	- the fraction of total reads i.e. relative abundance
+### Functional Profiling
+#### Bracken
+- `bracken_classicreport.tsv` - is the abundance re-estimation of kraken2 outputs **AFTER** conversion to a metaphlan format. It is this file that is used for the input for HUMAnN
+#### HUMANN
+- `genefamilies.tsv` - contains the abundance of each identified gene family in the community. Gene families are groups of evolutionarily-related protein-coding sequences that often perform similar functions. 
+- `pathabundance.tsv` - contains the abundance of each pathway in the community as a function of the abundances of the pathway's component reactions. -   Pathway abundance is computed once at the community level and again for each species (plus the "unclassified" stratum) using community- and species-level gene abundances along with the structure of the pathway.
+- `pathcoverage.tsv` - contains an alternative description of the presence (1) and absence (0) of pathways in a community, independent of their quantitative abundance. More specifically, HUMAnN 3.0 assigns a confidence score to each reaction detected in the community. Reactions with abundance greater than the median reaction abundance are considered to be more confidently detected than those below the median abundance.
+### Visualisation
+#### Bracken
+- `bracken_classicreport.krona` - contains the converted bracken report in the krona format style. *Does not really need to ever be opened!*
+- `bracken_classicreport.html` - the html form of the krona file. This is interactive and will need to be opened in a web browser. Example output is below:
+	![[Pasted image 20220927165414.png]]
+#### BiomFiles
+This is a unified folder **OUTSIDE** of each isolate to hold the converted biom files. Biom files (`.biom`) are files generated from information held within the `bracken_classicreport.txt` output file. The biom files are further combined into one singular file for better comparisons between isolate communities. 
+##### outputs from microbiome analyses
+- **Total Abundance and Prevalence**![[Prevalence_TotalAbundance 1.png]]
+- **Absolute abundance per Phylum** ![[Taxonomy_AbsoluteAbundance.png]]
+- **Alpha Diversity** ![[AlphaDiversity.png]]
 ### Further information
 - To better understand the Kraken2 hit threshold, see `Hit group threshold` in https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#classification 
 - To understand the bracken options, see `${THRESHOLD}` and `${READ_LEN}` parameters in https://github.com/jenniferlu717/Bracken/blob/master/README.md
