@@ -5,7 +5,12 @@
 # 
 # Requires: Via conda(fastqc, trim-galore, bmtagger, kraken2, bracken, krona, krakentools (forked byb DRO))
 # Considerations: Remove need for kraken and bracken path arguments. Force installation via conda
-# Author: Damilola Oresegun	                                                                                                                                 		              #
+# Author: Damilola Oresegun
+# Usage: python3 AuOF_MasterControl.py -i DemultiplexedReads -o outputFol -r reference -kr path/to/kraken2 (or kraken2)
+#           -br path/to/bracken (or bracken) -kb krakenDATABASE -t threads -m max_memory_usage
+#           -dk path/to/krakentools -kt krakenThreshold -bt brackenThreahold -bl brackenReadLength
+#           -f path/to/humann3 (or humann3)
+# Recommended to use the shell script to build this command. see runMaster.sh script!                                                                                                                             		              #
 ###########################################################################################################################################################
 import logging
 import logging.handlers
@@ -293,8 +298,21 @@ if runErr == "Good":
 elif runErr == "Failed":
     logger.info("Error. File not found. Have a look to see if the bracken file paths are correct")
     logger.error("Error. File not found. Have a look to see if the bracken file paths are correct")
-# use the combined biom to run the microbiome analysis
-if MICROANAL
-logger.info("Running Microbiome Analysis on the combined biom file")
-
+# use the combined biom to run the microbiome analysis -- currently not working as desired due to Rscript issues
+""" if MICROANAL is True:
+    logger.info("Running Microbiome Analysis on the combined biom file")
+    microOut = os.path.join(OUTDIR, "Microbiome_Analyses")
+    makeDirectory(microOut)
+    try:
+        runMa = ' '.join(["Rscript --vanilla MicrobiomeAnalysis.R", comBiom, microOut, SAMDATA, OUTIMAGE])
+        print(runMa)
+        subprocess.call(runMa, shell = True)
+        logger.info("Microbiome analyses completed. Outputs and plots are saved in " + microOut)
+    except (FileNotFoundError, FileExistsError):
+        logger.info("A file was not found. Check the log file")
+        logger.error("File not found. Check the correct input parameters are present") """
 logger.info("AuOF pipeline completed")    
+logger.info("The next step involves the use of the attached R script 'MicrobiomeAnalysis.R'")
+logger.info("It is recommended to download the biom files locally and use the R script in a GUI")
+logger.info("While the R script can work via command line, in testing we have found that it is unstable")
+logger.info("As such, please run the microbiome R analysis on a GUI like Rstudio for the best and fastest experience")
