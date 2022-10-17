@@ -193,11 +193,13 @@ def trimmy(inpt, outpt, threads):
                 outFile = os.path.join(trmOut, fname + "_R1_trimmed.fastq")
                 # copy the file and rename
                 shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+                os.remove(str(os.path.abspath(file)))
                 print("Trimmed forward reads have been renamed and saved as " + outFile)
             if (str(file).__contains__("R2")):
                 outFile = os.path.join(trmOut, fname + "_R2_trimmed.fastq")
                 # copy the file and rename
                 shutil.copy2(str(os.path.abspath(file)), os.path.abspath(outFile))
+                os.remove(str(os.path.abspath(file)))
                 print("Trimmed reverse reads have been renamed and saved as " + outFile)
     print("Trim-galore completed successfully.")
     return trmOut

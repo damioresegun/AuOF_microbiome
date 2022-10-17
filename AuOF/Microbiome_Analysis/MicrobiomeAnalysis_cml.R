@@ -25,33 +25,7 @@ if (length(args) == 0) {
   # use the working directory as the output folder
   stop("At least three arguments are needed.")
 }
-# set the cran mirror to UK mirror
-chooseCRANmirror(ind=72)
-Rver = paste(version$major, version$minor, sep=".")
-RverCheck <- grepl("4.1", Rver, fixed = TRUE)
-# install and set libraries
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-library(BiocManager)
-# check the r version
-print(RverCheck)
-if (RverCheck == TRUE) {
-  print("Your R version less than R version 4.2. So a compatible 
-  BiocManager version will be attempted. This has been tested with
-  up to R version 4.1.")
-  install.packages("devtools")
-  devtools::install_github("Bioconductor/BiocManager", ref="ghost-binary-repo")
-  #BiocManager::install(version = '3.14')
-  BiocManager::install(c("microbiome/mia", "devtools","tidyr", "remotes",
-                        "tidyverse","dplyr","cowplot","knitr","phyloseq",
-                        "vegan","ape", "ggplot2","ggplotify", "magrittr",
-                        "data.table","scater","plyr"))
-} else if (RverCheck == FALSE) {
-  BiocManager::install(c("microbiome/mia", "devtools","tidyr", "remotes",
-                        "tidyverse","dplyr","cowplot","knitr","phyloseq",
-                        "vegan","ape", "ggplot2","ggplotify", "magrittr",
-                        "data.table","scater","plyr"))
-}
+
 # load the libraries
 library(mia)
 library(dplyr)
@@ -63,7 +37,7 @@ library(magrittr)
 library(ape)
 library(tidyverse)
 library(data.table)
-library(miaViz)
+#library(miaViz)
 library(scater)
 library(cowplot)
 library(plyr)
