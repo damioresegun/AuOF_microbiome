@@ -46,9 +46,9 @@ library(plyr)
 ##############################################################################################################################
 # biom file for testing. REMOVE ONE COMPLETE
 args= c("C:/Users/dro/OneDrive - University of St Andrews/MacKenzie_Institute/BiomFiles/CombinedIsolate.biom", 
-        "C:/Users/dro/Dropbox/Work/MacLaptop/CMC_SoilProject/AuOF_microbiome/AuOF/Microbiome_Analysis", 
+        "C:/Users/dro/Desktop/MeCheck2", 
         "C:/Users/dro/Dropbox/Work/MacLaptop/CMC_SoilProject/AuOF_microbiome/AuOF/Microbiome_Analysis/sample_metadata.csv",
-        "tiff")
+        "png")
 #
 # set the argument variables
 biomData = args[1]

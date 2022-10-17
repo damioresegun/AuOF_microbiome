@@ -5,7 +5,28 @@
 	- [Installation](#installation)
 		- [Beware](#beware)
 		- [Package](#package)
-		- 
+		- [CONDA/MAMBA](###CONDA/MAMBA)
+			- [Install MAMBA](####Install-MAMBA)
+			- [Install packages](####Install-packages)
+			- [Easy Install](####Easy-Install)
+		- [Additional Downloads](###Additional-Downloads)
+			- [Modified Krakentools](####Modified-Krakentools)
+		- [Install databases](###Install-databases)
+			- [Kraken](####Kraken)
+			- [Bracken](####Bracken)
+			- [HUMAnN](####HUMAnN)
+	- [Pipeline Options](##Pipeline-Options)
+		- [Required Parameters](###Required-Parameters)
+		- [Optional Parameters](###Optional-Parameters)
+	- [Pipeline Running Script](##Pipeline-Running-Script)
+		- [Variables](###Variables)
+		- [Pipeline Breakdown](###Pipeline-Breakdown)
+	- [Outputs](##Outputs)
+		- [QC and Filtering](###QC-and-Filtering)
+		- [Taxonomic Classification](###Taxonomic-Classification)
+		- [Functional Profiling](###Functional-Profiling)
+		- [Visualisation](###Visualisation)
+	- [Further Information](##Further-Information)
 <!-- tocstop -->
 # AuOF
 ## Overview
@@ -73,10 +94,8 @@ The rest of the tools are easily installed using conda. If you have mamba, it is
 | R-base         | 4.1.3   |
 | Samtools       | 0.1.19  |
 | Trim-galore    | 0.6.7   |
-#### Easy Install
-For an easier and somewhat quicker way to get the environment going, you can use the YAML file that is within this package to create a similar environment to which this pipeline was developed on. 
-
-????
+##### Rscripts
+The microbiome analysis process is carried out using a custom Rscript. The packages used have been tested on R version 4.1+, using BiocManager. Importantly, the Rscript may not work with the conda environment due to compatibility issues. So it would be better to run the Rscript using a GUI like Rstudio. 
 
 ### Additional Downloads
 #### Modified Krakentools
@@ -208,7 +227,7 @@ To make configuration easier, the `config.sh` file was added to allow the user t
 		- **png** or **tiff** for image format
 	- Plots and tables are generated in the output folder
 	- Open the R script file for more information
-	- **NOTE: There is a command line version of this script: "MicrobiomeAnalysis_cml.R". However, this is not recommended for use. In testing, it is often temperamental and requires some fixes.**
+	- **NOTE: There is a command line version of this script: "MicrobiomeAnalysis_cml.R". However, this is not recommended for use. In testing, it is often temperamental and requires some fixes. Seriously, this script will likely not work.**
 
 ## Outputs
 Outputs are generated for each isolate with a folder made for each folder and the results of each analysis step are placed in associated folders. For each major step, the folders to be generated and their contents are described below.
