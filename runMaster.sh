@@ -1,25 +1,25 @@
 #!/bin/bash
 # Bash script to run the AuOF master control script during development
 # enter the path to the AuOF_MasterControl python script
-AuOF=/home/doresegu/scratch/private/CMC_Project/AuOF_MasterControl.py
+AuOF=/path/to/AuOF_MasterControl.py
 # enter the path to the folder holding the directories of the reads
-input=/home/doresegu/scratch/private/CMC_Project/Demultiplexed
+input=/path/to/my/Demultiplexed
 # full path to the output folder
-output=/home/doresegu/scratch/private/CMC_Project/AuOF_Revamp2
+output=/path/to/output
 # path to the reference genome for decontamination
-reference=/home/doresegu/scratch/private/CMC_Project/BMTAGGER_INDEX/hg38.fa
+reference=/path/to/reference.fa
 # path to the kraken2 package. If in the $PATH then just enter kraken2
 kraken="kraken2"
 # path to the bracken package. If in the $PATH then just enter bracken
 bracken="bracken"
 # path to the kraken database
-krakenDB=/home/doresegu/scratch/private/Kraken_DB
+krakenDB=/path/to/Kraken_DB
 # number of threads
 threads=24
 # enter the maximum memory to use in megabytes
 memory=150000
 # path to the krakentools package directory
-krakenTool=/home/doresegu/scratch/private/KrakenTools
+krakenTool=/path/to/forked/KrakenTools
 # state the kraken hit threshold
 krakThres=5
 # state the bracken hit threshold
