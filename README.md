@@ -5,7 +5,7 @@
 	- [Installation](#installation)
 		- [Beware](#beware)
 		- [Package](#package)
-		- [CONDA/MAMBA](###CONDA/MAMBA)
+		- [CONDA/MAMBA](###condamamba)
 			- [Install MAMBA](####Install-MAMBA)
 			- [Install packages](####Install-packages)
 			- [Easy Install](####Easy-Install)
