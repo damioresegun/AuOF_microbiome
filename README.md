@@ -277,9 +277,10 @@ Outputs are generated for each isolate with a folder made for each folder and th
 #### BiomFiles
 This is a unified folder **OUTSIDE** of each isolate to hold the converted biom files. Biom files (`.biom`) are files generated from information held within the `bracken_classicreport.txt` output file. The biom files are further combined into one singular file for better comparisons between isolate communities. 
 ##### outputs from microbiome analyses
-- **Total Abundance and Prevalence**![[Prevalence_TotalAbundance 1.png]]
-- **Absolute abundance per Phylum** ![[Taxonomy_AbsoluteAbundance.png]]
-- **Alpha Diversity** ![[AlphaDiversity.png]]
+- **Total Abundance and Prevalence**![Prevalence_TotalAbundance](https://user-images.githubusercontent.com/33520829/192578526-a560efe9-67f3-4800-b18a-9aab2fdd7dc1.png)
+- **Absolute abundance per Phylum** ![Taxonomy_AbsoluteAbundance](https://user-images.githubusercontent.com/33520829/192578471-2d523b75-35af-46c0-abf5-eaf5df165302.png)
+- **Alpha Diversity** ![AlphaDiversity](https://user-images.githubusercontent.com/33520829/192578417-c412188c-4b0d-4c32-ba48-967506c891e6.png)
+
 ### Further information
 - To better understand the Kraken2 hit threshold, see `Hit group threshold` in https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#classification 
 - To understand the bracken options, see `${THRESHOLD}` and `${READ_LEN}` parameters in https://github.com/jenniferlu717/Bracken/blob/master/README.md
