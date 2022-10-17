@@ -266,7 +266,8 @@ Outputs are generated for each isolate with a folder made for each folder and th
 #### Bracken
 - `bracken_classicreport.krona` - contains the converted bracken report in the krona format style. *Does not really need to ever be opened!*
 - `bracken_classicreport.html` - the html form of the krona file. This is interactive and will need to be opened in a web browser. Example output is below:
-	![[Pasted image 20220927165414.png]]
+	![KronaChart](https://user-images.githubusercontent.com/33520829/196187572-fc8b97d2-6104-4c82-bc1a-bbf3f34e87cb.png)
+
 #### BiomFiles
 This is a unified folder **OUTSIDE** of each isolate to hold the converted biom files. Biom files (`.biom`) are files generated from information held within the `bracken_classicreport.txt` output file. The biom files are further combined into one singular file for better comparisons between isolate communities. 
 ##### outputs from microbiome analyses
